@@ -6,7 +6,7 @@ services:
     image: gomsu-web:latest
     container_name: gomsu-web
     ports:
-      - "8080:80"
+      - "${WEB_PORT:-8899}:80"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost/"]
