@@ -1,0 +1,7 @@
+.git
+ceramic/
+site/tools/
+**/__pycache__/
+*.pyc
+.claude/
+node_modules/

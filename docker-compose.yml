@@ -1,0 +1,29 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gomsu-web:latest
+    container_name: gomsu-web
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Smoke tests against the running `web` service. Not started by a plain
+  # `docker compose up`; run explicitly with:
+  #   docker compose --profile test run --rm tests
+  tests:
+    build:
+      context: .
+      dockerfile: tests/Dockerfile
+    environment:
+      - BASE_URL=http://web
+    depends_on:
+      web:
+        condition: service_healthy
+    profiles: ["test"]
