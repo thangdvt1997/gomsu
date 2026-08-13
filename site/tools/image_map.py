@@ -8,6 +8,7 @@ EXCLUDED from any use on the site.
 """
 
 SRC_DIR = "ceramic/product_image"
+PDF_SRC_DIR = "ceramic/pdf_extracted"
 
 
 def f(ts, h):
@@ -20,7 +21,77 @@ WATERMARKED_EXCLUDE = {
     f("782107", "d76d1967d0cecded7561834b480fa47b"),
 }
 
-# slug -> ordered list of source filenames (first = primary/hero image)
+# Ground-truth per-product photos, programmatically extracted from the
+# workshop's own official price list PDF (each embedded image was matched
+# to its row by product name + vertical position on the page — see
+# site/tools/pdf_extract_images.py). Covers all 60 named designs.
+PDF_IMAGES = {
+    "ba-beo": ["ba-beo-pdf1.jpeg"],
+    "bau-tron": ["bau-tron-pdf1.jpeg"],
+    "binh-quai": ["binh-quai-pdf1.jpeg"],
+    "bo-du-du": ["bo-du-du-pdf1.jpeg"],
+    "bo-gio-cua": ["bo-gio-cua-pdf1.jpeg"],
+    "bo-ma": ["bo-ma-pdf1.jpeg"],
+    "bo-mui-bo-3": ["bo-mui-bo-3-pdf1.jpeg"],
+    "bom-chan-vuong": ["bom-chan-vuong-pdf1.jpeg"],
+    "bom-mieng-rong": ["bom-mieng-rong-pdf1.jpeg"],
+    "bom-van-ngang": ["bom-van-ngang-pdf1.jpeg"],
+    "bong-mat-na": ["bong-mat-na-pdf1.jpeg"],
+    "canh-buom": ["canh-buom-pdf1.jpeg"],
+    "chai-thang": ["chai-thang-pdf1.jpeg"],
+    "chum-2-tai": ["chum-2-tai-pdf1.jpeg", "chum-2-tai-pdf2.jpeg"],
+    "chum-nho": ["chum-nho-pdf1.jpeg"],
+    "chum-tron": ["chum-tron-pdf1.jpeg"],
+    "chuong-23": ["chuong-23-pdf1.jpeg"],
+    "chuong-35": ["chuong-35-pdf2.jpeg", "chuong-35-pdf1.jpeg"],
+    "chuong-42": ["chuong-42-pdf1.jpeg"],
+    "chuong-mini": ["chuong-mini-pdf1.jpeg"],
+    "co-gai": ["co-gai-pdf1.jpeg"],
+    "cu-lac": ["cu-lac-pdf1.jpeg"],
+    "cu-toi": ["cu-toi-pdf1.jpeg"],
+    "cup": ["cup-pdf1.jpeg"],
+    "duoi-ca": ["duoi-ca-pdf1.jpeg"],
+    "giot-le": ["giot-le-pdf1.jpeg"],
+    "hat-mua": ["hat-mua-pdf1.jpeg"],
+    "lo-bom": ["lo-bom-pdf1.jpeg"],
+    "lo-chum": ["lo-chum-pdf1.jpeg"],
+    "lo-chum-chop": ["lo-chum-chop-pdf1.jpeg"],
+    "lo-doc-loe": ["lo-doc-loe-pdf1.jpeg"],
+    "lo-ho-lo": ["lo-ho-lo-pdf1.jpeg"],
+    "lo-mini": ["lo-mini-pdf1.jpeg"],
+    "lo-mui-khia": ["lo-mui-khia-pdf1.jpeg"],
+    "lo-mui-loe-day": ["lo-mui-loe-day-pdf1.jpeg"],
+    "lo-phieu-tron": ["lo-phieu-tron-pdf1.jpeg"],
+    "lo-soc-be": ["lo-soc-be-pdf1.jpeg"],
+    "lo-tulip": ["lo-tulip-pdf1.jpeg"],
+    "long-chim": ["long-chim-pdf1.jpeg"],
+    "long-den": ["long-den-pdf1.jpeg", "long-den-pdf2.jpeg"],
+    "lu-bia": ["lu-bia-pdf1.jpeg"],
+    "ly-cao": ["ly-cao-pdf1.jpeg"],
+    "ly-lun": ["ly-lun-pdf1.jpeg"],
+    "ly-luon": ["ly-luon-pdf1.jpeg"],
+    "ly-thon": ["ly-thon-pdf1.jpeg"],
+    "mai-san": ["mai-san-pdf1.jpeg"],
+    "mat-ho": ["mat-ho-pdf1.jpeg"],
+    "ong-buong": ["ong-buong-pdf1.jpeg"],
+    "ong-ganh": ["ong-ganh-pdf1.jpeg"],
+    "ong-xoan": ["ong-xoan-pdf1.jpeg"],
+    "phieu-cao": ["phieu-cao-pdf1.jpeg"],
+    "qua-hong": ["qua-hong-pdf1.jpeg"],
+    "ruot-phich": ["ruot-phich-pdf2.jpeg", "ruot-phich-pdf1.jpeg"],
+    "thoi": ["thoi-pdf1.jpeg"],
+    "tru-ganh": ["tru-ganh-pdf1.jpeg"],
+    "tru-tum": ["tru-tum-pdf1.jpeg"],
+    "vai-tron": ["vai-tron-pdf1.jpeg"],
+    "van-go": ["van-go-pdf1.jpeg"],
+    "vo-lun": ["vo-lun-pdf1.jpeg"],
+    "vuong-thang": ["vuong-thang-pdf1.jpeg"],
+}
+
+# Extra real photos from the workshop's own photo shoot (see batch review in
+# the conversation history) — appended AFTER the PDF ground-truth photo for
+# products where a confident same-design match was found, for a richer
+# gallery / higher resolution than the PDF's small embedded crop.
 PRODUCT_IMAGES = {
     "lo-mini": [
         f("814298", "baa80fdf356899f4cd304afc5a427693"),

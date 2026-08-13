@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from products_data import (
     COMPANY, GLAZE, CATEGORIES, CAT_LABEL, PRODUCTS, PRODUCTS_BY_SLUG, FEATURED, SIMILAR_TO,
 )
-from image_map import PRODUCT_IMAGES, WATERMARKED_EXCLUDE, LIFESTYLE_IMAGES, WORKSHOP_IMAGES
+from image_map import PRODUCT_IMAGES, PDF_IMAGES, WATERMARKED_EXCLUDE, LIFESTYLE_IMAGES, WORKSHOP_IMAGES
 from layout import page, fmt_price, DOMAIN, SITE_NAME
 
 OUT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -30,8 +30,9 @@ def esc(s):
 
 
 def image_count(slug):
-    files = PRODUCT_IMAGES.get(slug, [])
-    return len([f for f in files if f not in WATERMARKED_EXCLUDE])
+    pdf_files = PDF_IMAGES.get(slug, [])
+    extra_files = [f for f in PRODUCT_IMAGES.get(slug, []) if f not in WATERMARKED_EXCLUDE]
+    return len(pdf_files) + len(extra_files)
 
 
 def resolve_image_slug(slug):
