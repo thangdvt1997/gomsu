@@ -80,11 +80,22 @@ PRODUCT_IMAGES = {
         f("781974", "98f6bc66f05bbd006ac22c7bd3138d5c"),
         f("782008", "228f4e61c977a3309a96d41718f21126"),
         f("782014", "0a6941ed8c9983e8cfbb1342097df0ce"),
+        f("729257", "910cf8c825c8c01fe428126b5db6486b"),
     ],
     "tru-ganh": [
         f("729245", "e8855f321103d1dd1ea105955f7d7ead"),
         f("729265", "079316b3a722b7c90d7a83bfa6d6ca5a"),
         f("782157", "552c9e463682c799465dde833cf684d6"),
+        f("729261", "daea682d78b527041846f62b5b42ec0f"),
+    ],
+    "chum-nho": [
+        f("782102", "dc3c8833afb77615fe125f5171fa0892"),
+    ],
+    "ly-luon": [
+        f("781878", "3a1589dda4e17a56bd3648ea3b70d072"),
+    ],
+    "qua-hong": [
+        f("781865", "456eefbda8c4adf03a45621bcde24287"),
     ],
     "lo-tulip": [
         f("721043", "a20db104be3eb1eab0ddee67b71abe6b"),
@@ -151,9 +162,6 @@ PRODUCT_IMAGES = {
 # Extra lifestyle / group photos not tied to one SKU -> used for homepage
 # hero, category banners and general gallery sections.
 LIFESTYLE_IMAGES = [
-    f("781865", "456eefbda8c4adf03a45621bcde24287"),
-    f("781878", "3a1589dda4e17a56bd3648ea3b70d072"),
-    f("782102", "dc3c8833afb77615fe125f5171fa0892"),
     f("781900", "4b21d28e926c6eaa5a3fde41dc13e6cf"),
     f("781909", "6e0b6c2c11cfa4d5b7b0322ebdb6c292"),
     f("781941", "f05a073928e5df9f0e314627709238f1"),

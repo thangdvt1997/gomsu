@@ -313,7 +313,7 @@ PRODUCTS = [
          desc="Quả Hồng có thân tròn đầy với các múi dọc nhẹ mô phỏng hình trái hồng — biểu tượng của sự "
               "sung túc, ngọt ngào trong văn hóa Việt. Cao 20cm, miệng rộng 10cm, là lựa chọn ý nghĩa cho "
               "quà tặng dịp lễ Tết, tân gia.",
-         featured=False),
+         featured=True),
     dict(slug="ly-luon", code="TM-031", name="Ly Lượn", cat="co-dien-men-loang",
          sizes=[S("S1", 19, 11.5, 70000), S("S2", None, None, 50000)],
          colors=["trang", "soi-xanh", "kho-den"],
@@ -321,7 +321,7 @@ PRODUCTS = [
          desc="Ly Lượn có phần miệng được tạo hình lượn sóng nhẹ thay vì tròn đều, mang lại cảm giác phá "
               "cách, hiện đại hơn cho không gian trưng bày. Hai lựa chọn kích thước phù hợp cả bàn ăn gia "
               "đình lẫn không gian quán cafe, nhà hàng.",
-         featured=False),
+         featured=True),
     dict(slug="bong-mat-na", code="TM-032", name="Bóng Mắt Na", cat="dang-doc-la",
          sizes=[S("S1", 20, 5, 65000), S("S2", 14, 4.5, 25000)],
          colors=["trang", "xanh-la", "kho-xanh-la"],
@@ -337,7 +337,7 @@ PRODUCTS = [
          desc="Chum Nhỡ có kích thước vừa phải, thân tròn đầy đặn gợi hình ảnh chiếc chum sành truyền thống "
               "thu nhỏ. Đặt được ở nhiều vị trí từ bậu cửa sổ, kệ tủ đến sảnh lớn mà không chiếm quá nhiều "
               "diện tích, rất linh hoạt trong trang trí.",
-         featured=False),
+         featured=True),
     dict(slug="bom-mieng-rong", code="TM-034", name="Bom Miệng Rộng", cat="vua-va-lon",
          sizes=[S(None, 29, 12, 85000)],
          colors=["trang", "soi-nau", "kho-den", "tieu"],
@@ -561,3 +561,41 @@ PRODUCTS = [
 
 PRODUCTS_BY_SLUG = {p["slug"]: p for p in PRODUCTS}
 FEATURED = [p for p in PRODUCTS if p["featured"]]
+
+# Designs with no distinct photo of their own in the source folder, matched
+# to the closest same-family shape that DOES have real photos. Their pages
+# show that photo with a clear "hình ảnh minh hoạ, dáng cùng dòng" badge
+# instead of the plain silhouette placeholder — honest about the gap while
+# still giving a concrete sense of the glaze/finish quality.
+SIMILAR_TO = {
+    "bo-ma": "ong-buong",
+    "co-gai": "giot-le",
+    "vuong-thang": "bom-van-ngang",
+    "lo-mui-loe-day": "lo-soc-be",
+    "duoi-ca": "bau-tron",
+    "cu-toi": "bau-tron",
+    "tru-tum": "tru-ganh",
+    "cup": "lu-bia",
+    "chai-thang": "ong-buong",
+    "bong-mat-na": "hat-mua",
+    "bom-mieng-rong": "bom-van-ngang",
+    "ong-xoan": "tru-ganh",
+    "ly-cao": "ly-thon",
+    "long-chim": "lo-soc-be",
+    "ly-lun": "ly-thon",
+    "cu-lac": "bau-tron",
+    "bo-gio-cua": "vo-lun",
+    "bo-mui-bo-3": "lo-soc-be",
+    "bo-du-du": "bau-tron",
+    "lo-chum": "chum-tron",
+    "lo-chum-chop": "chum-tron",
+    "ruot-phich": "lu-bia",
+    "chuong-23": "chuong-mini",
+    "lo-bom": "bom-van-ngang",
+    "lo-mui-khia": "vo-lun",
+    "lo-doc-loe": "lo-soc-be",
+    "long-den": "lo-tulip",
+    "mai-san": "tru-ganh",
+    "bom-chan-vuong": "bom-van-ngang",
+    "ba-beo": "vo-lun",
+}

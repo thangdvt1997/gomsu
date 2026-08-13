@@ -10,7 +10,7 @@ import html as _html
 
 sys.path.insert(0, os.path.dirname(__file__))
 from products_data import (
-    COMPANY, GLAZE, CATEGORIES, CAT_LABEL, PRODUCTS, PRODUCTS_BY_SLUG, FEATURED,
+    COMPANY, GLAZE, CATEGORIES, CAT_LABEL, PRODUCTS, PRODUCTS_BY_SLUG, FEATURED, SIMILAR_TO,
 )
 from image_map import PRODUCT_IMAGES, WATERMARKED_EXCLUDE, LIFESTYLE_IMAGES, WORKSHOP_IMAGES
 from layout import page, fmt_price, DOMAIN, SITE_NAME
@@ -32,6 +32,19 @@ def esc(s):
 def image_count(slug):
     files = PRODUCT_IMAGES.get(slug, [])
     return len([f for f in files if f not in WATERMARKED_EXCLUDE])
+
+
+def resolve_image_slug(slug):
+    """Return (slug_to_load_images_from, is_similar) — falls back to a
+    same-family sibling (SIMILAR_TO) when this product has no photo of its
+    own, so the page shows a real photo with an honest badge instead of a
+    bare placeholder."""
+    if image_count(slug) > 0:
+        return slug, False
+    sib = SIMILAR_TO.get(slug)
+    if sib and image_count(sib) > 0:
+        return sib, True
+    return slug, False
 
 
 def min_price(p):
@@ -80,10 +93,14 @@ gap:8px;text-align:center;padding:12px;">
 
 def product_thumb_html(p, size="card"):
     """Return an <img> tag or placeholder markup for grid/card contexts."""
-    n = image_count(p["slug"])
-    if n > 0:
-        src = f"/assets/img/products/{p['slug']}-1-thumb.jpg"
-        return f'<img src="{src}" alt="{esc(p["name"])} - {esc(COMPANY["name"])} Bát Tràng" loading="lazy" width="700" height="700">'
+    src_slug, is_similar = resolve_image_slug(p["slug"])
+    if image_count(src_slug) > 0:
+        src = f"/assets/img/products/{src_slug}-1-thumb.jpg"
+        img = f'<img src="{src}" alt="{esc(p["name"])} - {esc(COMPANY["name"])} Bát Tràng" loading="lazy" width="700" height="700">'
+        if is_similar:
+            return img + ('<span class="badge-new" style="background:var(--ink-faint);'
+                          'top:auto;right:auto;bottom:12px;left:12px;">Ảnh minh hoạ</span>')
+        return img
     return placeholder_tile(p)
 
 
@@ -96,7 +113,6 @@ def color_dots(p, limit=4):
 
 
 def product_card(p, order=0):
-    n = image_count(p["slug"])
     href = f"/san-pham/{p['slug']}.html"
     badge = '<span class="badge-new">Nổi bật</span>' if p["featured"] and order < 8 else ""
     colors_attr = ",".join(p["colors"])
@@ -349,17 +365,26 @@ def related_products(p, n=4):
 
 def build_product_pages():
     for p in PRODUCTS:
-        n = image_count(p["slug"])
+        src_slug, is_similar = resolve_image_slug(p["slug"])
+        n = image_count(src_slug)
         if n > 0:
-            main_img = f"/assets/img/products/{p['slug']}-1.jpg"
+            main_img = f"/assets/img/products/{src_slug}-1.jpg"
             thumbs = "\n".join(
-                f"""<button data-full="/assets/img/products/{p['slug']}-{i}.jpg" class="{'is-active' if i == 1 else ''}">
-<img src="/assets/img/products/{p['slug']}-{i}-thumb.jpg" alt="{esc(p['name'])} ảnh {i}" loading="lazy"></button>"""
+                f"""<button data-full="/assets/img/products/{src_slug}-{i}.jpg" class="{'is-active' if i == 1 else ''}">
+<img src="/assets/img/products/{src_slug}-{i}-thumb.jpg" alt="{esc(p['name'])} ảnh {i}" loading="lazy"></button>"""
                 for i in range(1, n + 1)
             )
+            similar_note = ""
+            if is_similar:
+                sib_name = PRODUCTS_BY_SLUG[src_slug]["name"]
+                similar_note = f"""<p style="font-size:.82rem;color:var(--ink-faint);margin-top:12px;text-align:center;">
+  <b style="color:var(--terracotta-dark);">Ảnh minh hoạ</b> — {p['name']} cùng dòng kiểu dáng/chất men với mẫu
+  {esc(sib_name)} đã có ảnh thật; hình dáng {p['name']} có thể khác đôi chút. Nhắn Zalo để xem ảnh thực tế
+  đúng mẫu {p['code']}.</p>"""
             gallery_html = f"""<div class="pd-gallery">
   <div class="pd-main-img"><img src="{main_img}" alt="{esc(p['name'])} - lọ hoa gốm sứ Bát Tràng {p['code']}" data-lightbox="{main_img}" id="pdmain"></div>
   <div class="pd-thumbs">{thumbs}</div>
+  {similar_note}
 </div>"""
             og_image = f"{DOMAIN}{main_img}"
         else:
@@ -502,8 +527,11 @@ def build_product_pages():
 def build_price_list():
     rows = []
     for p in PRODUCTS:
-        thumb = product_thumb_html(p)
-        thumb_cell = thumb if image_count(p["slug"]) > 0 else '<span style="font-size:1.4rem;">🏺</span>'
+        src_slug, _ = resolve_image_slug(p["slug"])
+        thumb_cell = (
+            f'<img src="/assets/img/products/{src_slug}-1-thumb.jpg" alt="{esc(p["name"])}" loading="lazy">'
+            if image_count(src_slug) > 0 else '<span style="font-size:1.4rem;">🏺</span>'
+        )
         size_lines = []
         for s in p["sizes"]:
             label = (s["label"] + ": ") if s["label"] else ""
