@@ -6,7 +6,6 @@ import { test, expect } from "@playwright/test";
 
 const CORE_PAGES: { path: string; marker: string }[] = [
   { path: "/", marker: "Gốm Sứ Trung Mừng" },
-  { path: "/san-pham", marker: "data-catalog-grid" },
   { path: "/bao-gia", marker: "Bảng Giá Sỉ" },
   { path: "/gioi-thieu", marker: "Giữ Lửa Nghề" },
   { path: "/lien-he", marker: "Liên Hệ" },
@@ -20,6 +19,14 @@ for (const { path, marker } of CORE_PAGES) {
     await expect(page.locator("body")).toContainText(marker);
   });
 }
+
+test("catalog page returns 200 and renders the filterable product grid", async ({ page }) => {
+  const res = await page.goto("/san-pham");
+  expect(res?.status()).toBe(200);
+  // data-catalog-grid is an HTML attribute (the vanilla-JS filter hooks onto
+  // it), not visible text, so check the DOM directly rather than body text.
+  await expect(page.locator("[data-catalog-grid]")).toBeVisible();
+});
 
 test("static assets are reachable", async ({ request }) => {
   const css = await request.get("/assets/css/style.css");

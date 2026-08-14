@@ -1,6 +1,19 @@
 import { test, expect } from "@playwright/test";
 
-test("add-to-cart -> checkout -> VNPay sandbox redirect is validly signed", async ({ page }) => {
+test("add-to-cart -> checkout -> VNPay redirect is validly signed", async ({ page }) => {
+  // Intercept the navigation to VNPay's real domain instead of letting the
+  // browser actually reach it: staging/CI only has placeholder
+  // VNPAY_TMN_CODE/HASH_SECRET (no real merchant account yet), so VNPay's
+  // own server would reject them and could redirect/rewrite the URL in an
+  // unpredictable way that has nothing to do with whether *our* signing
+  // code is correct. Fulfilling the request locally lets us assert on the
+  // exact URL our server built without depending on VNPay's live response.
+  let capturedUrl: string | null = null;
+  await page.route("https://sandbox.vnpayment.vn/**", async (route) => {
+    capturedUrl = route.request().url();
+    await route.fulfill({ status: 200, contentType: "text/plain", body: "stubbed" });
+  });
+
   await page.goto("/san-pham/chum-2-tai");
   await page.click('button:has-text("Thêm vào giỏ")');
   await expect(page.locator('button:has-text("Đã thêm vào giỏ")')).toBeVisible();
@@ -15,13 +28,11 @@ test("add-to-cart -> checkout -> VNPay sandbox redirect is validly signed", asyn
   await page.fill('input[name="customerPhone"]', "0912345678");
   await page.fill('input[name="shippingAddress"]', "123 Test Street, Ha Noi");
 
-  // The submit button triggers a JS redirect (window.location.href) to VNPay
-  // rather than a normal navigation Playwright auto-waits for -- wait for it
-  // explicitly instead of asserting immediately after the click.
   await page.click('button:has-text("Thanh toán qua VNPay")');
-  await page.waitForURL(/sandbox\.vnpayment\.vn/, { timeout: 10_000 });
+  await expect.poll(() => capturedUrl, { timeout: 10_000 }).not.toBeNull();
 
-  const url = new URL(page.url());
+  const url = new URL(capturedUrl!);
+  expect(url.hostname).toBe("sandbox.vnpayment.vn");
   expect(url.searchParams.get("vnp_TxnRef")).toBeTruthy();
   expect(url.searchParams.get("vnp_SecureHash")).toBeTruthy();
   expect(url.searchParams.get("vnp_Command")).toBe("pay");
