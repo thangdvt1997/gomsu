@@ -24,7 +24,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const post = await prisma.post.findUnique({ where: { slug } });
-  if (!post) return {};
+  if (!post || !post.publishedAt) return {};
   return resolveMetadata({
     path: `/tin-tuc/${post.slug}`,
     metaTitle: post.metaTitle,
@@ -42,7 +42,10 @@ export default async function BlogPostPage({
 }) {
   const { slug } = await params;
   const post = await prisma.post.findUnique({ where: { slug } });
-  if (!post) notFound();
+  // Unpublished drafts stay 404 for public visitors -- admins preview them
+  // from /admin/posts/[id] instead, so a guessed/shared URL never leaks
+  // in-progress content before it's meant to go live.
+  if (!post || !post.publishedAt) notFound();
 
   const relatedPosts = await prisma.post.findMany({
     where: { publishedAt: { not: null }, slug: { not: slug } },
