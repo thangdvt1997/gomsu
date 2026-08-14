@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { updateProductAction, deleteProductAction, deleteProductImageAction } from "@/lib/actions/admin-products";
 import { uploadProductImageAction } from "@/lib/actions/admin-upload";
 import { ProductForm } from "@/components/admin/ProductForm";
+import { AdminBackLink } from "@/components/admin/AdminBackLink";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
 
   return (
     <>
+      <AdminBackLink href="/admin/products" label="Quay lại danh sách sản phẩm" />
       <div className="admin-topbar">
         <h1>Sửa: {product.name}</h1>
         <form action={deleteProductAction.bind(null, product.id)}>

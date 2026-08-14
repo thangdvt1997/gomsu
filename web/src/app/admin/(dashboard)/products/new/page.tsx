@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { createProductAction } from "@/lib/actions/admin-products";
 import { ProductForm } from "@/components/admin/ProductForm";
+import { AdminBackLink } from "@/components/admin/AdminBackLink";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,7 @@ export default async function NewProductPage() {
 
   return (
     <>
+      <AdminBackLink href="/admin/products" label="Quay lại danh sách sản phẩm" />
       <div className="admin-topbar">
         <h1>Thêm sản phẩm</h1>
       </div>

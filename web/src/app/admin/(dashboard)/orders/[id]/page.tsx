@@ -8,6 +8,7 @@ import {
   updateOrderInternalNoteAction,
   setOrderTagAction,
 } from "@/lib/actions/admin-orders";
+import { AdminBackLink } from "@/components/admin/AdminBackLink";
 
 const TAG_SUGGESTIONS = ["Khách sỉ", "VIP", "Khách quen", "Doanh nghiệp"];
 
@@ -37,6 +38,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
 
   return (
     <>
+      <AdminBackLink href="/admin/orders" label="Quay lại danh sách đơn hàng" />
       <div className="admin-topbar">
         <h1>Đơn hàng {order.orderNumber}</h1>
         <div style={{ display: "flex", gap: 8 }}>

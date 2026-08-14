@@ -18,7 +18,11 @@ export function LoginForm() {
         <label>Mật khẩu</label>
         <input type="password" name="password" required />
       </div>
-      {state.error && <p style={{ color: "var(--terracotta-dark)", fontWeight: 600 }}>{state.error}</p>}
+      {state.error && (
+        <p style={{ color: "#a83232", fontWeight: 600, fontSize: ".88rem", margin: 0, textAlign: "center" }}>
+          {state.error}
+        </p>
+      )}
       <button className="btn btn-primary btn-block" type="submit" disabled={pending}>
         {pending ? "Đang đăng nhập..." : "Đăng nhập"}
       </button>
