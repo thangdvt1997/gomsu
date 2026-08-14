@@ -69,6 +69,22 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # Playwright parity/CMS/payment suite against the new stack. Not started
+  # by a plain `docker compose up`; run explicitly with:
+  #   docker compose --profile test run --rm e2e
+  e2e:
+    build:
+      context: ./web
+      dockerfile: tests/e2e/Dockerfile
+    environment:
+      - BASE_URL=http://app:3000
+      - ADMIN_TEST_EMAIL=${ADMIN_TEST_EMAIL:-}
+      - ADMIN_TEST_PASSWORD=${ADMIN_TEST_PASSWORD:-}
+    depends_on:
+      app:
+        condition: service_healthy
+    profiles: ["test"]
+
 volumes:
   pgdata:
   media_data:
