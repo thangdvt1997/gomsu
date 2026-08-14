@@ -37,7 +37,11 @@ test.describe("authenticated admin", () => {
     await page.fill('input[name="code"]', testCode);
     await page.fill('textarea[name="description"]', "Sản phẩm test tự động, sẽ bị xoá.");
     await page.click('button[type="submit"]');
-    await expect(page).toHaveURL(/\/admin\/products\/[a-z0-9]+$/);
+    // Require a real cuid (25 lowercase alphanumeric chars), not just any
+    // match of [a-z0-9]+ -- that pattern also matches the literal "new" in
+    // /admin/products/new, which would let a silently-failed create (no
+    // redirect fired) pass this assertion too.
+    await expect(page).toHaveURL(/\/admin\/products\/[a-z0-9]{20,}$/);
 
     await page.goto("/admin/products");
     await expect(page.locator("body")).toContainText(testName);
