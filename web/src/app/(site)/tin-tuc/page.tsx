@@ -8,6 +8,8 @@ export const metadata: Metadata = {
     "Kiến thức chọn lọ hoa, phối màu men và bảo quản gốm sứ Bát Tràng từ đội ngũ Gốm Sứ Trung Mừng.",
 };
 
+export const dynamic = "force-dynamic";
+
 function formatDate(d: Date) {
   return new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }).format(d);
 }

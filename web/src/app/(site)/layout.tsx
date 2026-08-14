@@ -5,6 +5,12 @@ import { MobileNav } from "@/components/site/MobileNav";
 import { Footer } from "@/components/site/Footer";
 import { FloatActions, Lightbox } from "@/components/site/FloatActions";
 
+// This layout reads Category from Postgres for the footer nav, so the whole
+// (site) route group must render dynamically -- a static/build-time render
+// has no DATABASE_URL/network access inside `docker build`, and baking
+// content in at build time would defeat the point of an editable CMS anyway.
+export const dynamic = "force-dynamic";
+
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const categories = await prisma.category.findMany({
     orderBy: { sortOrder: "asc" },

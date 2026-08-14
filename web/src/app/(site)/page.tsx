@@ -9,6 +9,9 @@ export const metadata: Metadata = {
     "Xưởng sản xuất lọ hoa gốm sứ Bát Tràng, hơn 60 mẫu mã đa dạng kích thước và men màu. Bán sỉ giá gốc, nhận đặt mẫu riêng, giao hàng toàn quốc.",
 };
 
+// See the note in san-pham/[slug]/page.tsx — DB-backed pages render dynamically.
+export const dynamic = "force-dynamic";
+
 const productSelect = {
   slug: true,
   code: true,

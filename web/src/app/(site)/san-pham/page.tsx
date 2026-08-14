@@ -8,6 +8,8 @@ export const metadata: Metadata = {
     "Danh mục đầy đủ hơn 60 mẫu lọ hoa gốm sứ Bát Tràng: mini để bàn, cổ điển men loang, dáng độc lạ, bộ sưu tập và dòng cao cấp trang trí. Lọc theo danh mục, giá, tông men.",
 };
 
+export const dynamic = "force-dynamic";
+
 const PRICE_BUCKETS = [
   { value: "under30", label: "Dưới 30.000đ" },
   { value: "30to60", label: "30.000 – 60.000đ" },

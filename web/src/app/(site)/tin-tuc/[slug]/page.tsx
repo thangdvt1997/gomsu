@@ -10,10 +10,8 @@ function formatDate(d: Date) {
   return new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }).format(d);
 }
 
-export async function generateStaticParams() {
-  const posts = await prisma.post.findMany({ select: { slug: true } });
-  return posts.map((p) => ({ slug: p.slug }));
-}
+// Rendered dynamically — see the note in san-pham/[slug]/page.tsx.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

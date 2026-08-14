@@ -10,6 +10,8 @@ export const metadata: Metadata = {
     "Cập nhật từ bảng giá xưởng Gốm Sứ Trung Mừng — giá áp dụng cho đơn đặt sỉ, số lượng lớn vui lòng liên hệ để nhận chiết khấu thêm.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function BaoGiaPage() {
   const products = await prisma.product.findMany({
     where: { isDraft: false },

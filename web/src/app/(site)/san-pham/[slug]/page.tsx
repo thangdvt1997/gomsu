@@ -20,10 +20,11 @@ async function getProduct(slug: string) {
   });
 }
 
-export async function generateStaticParams() {
-  const products = await prisma.product.findMany({ select: { slug: true } });
-  return products.map((p) => ({ slug: p.slug }));
-}
+// Rendered dynamically (no generateStaticParams): products are edited live
+// through the admin CMS, and static generation would need a live DB
+// connection at `docker build` time and would bake in stale content between
+// deploys either way.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
