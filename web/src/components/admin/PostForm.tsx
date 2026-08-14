@@ -27,10 +27,6 @@ export function PostForm({ action, post, submitLabel }: PostFormProps) {
           <input type="text" name="excerpt" defaultValue={post?.excerpt ?? ""} />
         </div>
         <div className="field">
-          <label>Ảnh bìa (đường dẫn /media/...)</label>
-          <input type="text" name="coverImage" defaultValue={post?.coverImage ?? ""} placeholder="/media/site/lifestyle-1.jpg" />
-        </div>
-        <div className="field">
           <label>Nội dung (HTML)</label>
           <textarea name="contentHtml" required defaultValue={post?.contentHtml} rows={14} />
         </div>

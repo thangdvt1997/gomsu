@@ -29,7 +29,7 @@ export default async function BaoGiaPage() {
   return (
     <>
       <div className="page-hero">
-        <img className="bg" src="/media/site/workshop-3-thumb.jpg" alt="" />
+        <img className="bg" src="/media/site/workshop-3.jpg" alt="" />
         <div className="container">
           <div className="breadcrumb">
             <Link href="/">Trang chủ</Link>

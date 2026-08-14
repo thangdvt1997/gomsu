@@ -52,7 +52,7 @@ export default async function BlogPostPage({
     <>
       <JsonLd data={breadcrumb} />
       <div className="page-hero" style={{ padding: "130px 0 40px" }}>
-        <img className="bg" src={post.coverImage?.replace(/\.jpg$/, "-thumb.jpg") ?? ""} alt="" />
+        <img className="bg" src={post.coverImage ?? ""} alt="" />
         <div className="container">
           <div className="breadcrumb">
             <Link href="/">Trang chủ</Link>

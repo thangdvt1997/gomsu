@@ -37,3 +37,36 @@ export async function uploadProductImageAction(productId: string, formData: Form
   revalidatePath(`/admin/products/${productId}`);
   revalidatePath(`/san-pham/${product.slug}`);
 }
+
+export async function uploadPostCoverAction(postId: string, formData: FormData) {
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return;
+
+  const post = await prisma.post.findUnique({ where: { id: postId } });
+  if (!post) return;
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const dir = path.join(MEDIA_DIR, "posts");
+  await mkdir(dir, { recursive: true });
+
+  // One size (not a separate thumb) used both as the full-width hero
+  // background and, downscaled by CSS, as the blog-index card image --
+  // downscaling a large image is always safe, only upscaling a small one
+  // blurs, which is exactly the bug this replaces (the hero used to be
+  // stretched from a 700px product/site thumbnail meant for small cards).
+  const filename = `${post.slug}-${Date.now()}`;
+  await sharp(buffer)
+    .rotate()
+    .resize(1600, 1600, { fit: "inside", withoutEnlargement: true })
+    .jpeg({ quality: 85 })
+    .toFile(path.join(dir, `${filename}.jpg`));
+
+  await prisma.post.update({
+    where: { id: postId },
+    data: { coverImage: `/media/posts/${filename}.jpg` },
+  });
+
+  revalidatePath(`/admin/posts/${postId}`);
+  revalidatePath("/tin-tuc");
+  revalidatePath(`/tin-tuc/${post.slug}`);
+}

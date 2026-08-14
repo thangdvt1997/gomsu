@@ -16,19 +16,21 @@ function slugify(s: string) {
     .replace(/(^-|-$)/g, "");
 }
 
+// coverImage is deliberately NOT read here -- it's managed exclusively by
+// uploadPostCoverAction (admin-upload.ts) via the upload widget on the post
+// edit page, so saving this form never overwrites/clears an uploaded cover.
 function readPostFields(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const excerpt = String(formData.get("excerpt") ?? "").trim() || null;
   const contentHtml = String(formData.get("contentHtml") ?? "").trim();
-  const coverImage = String(formData.get("coverImage") ?? "").trim() || null;
   const publishNow = formData.get("published") === "on";
   const metaTitle = String(formData.get("metaTitle") ?? "").trim() || null;
   const metaDescription = String(formData.get("metaDescription") ?? "").trim() || null;
-  return { title, excerpt, contentHtml, coverImage, publishNow, metaTitle, metaDescription };
+  return { title, excerpt, contentHtml, publishNow, metaTitle, metaDescription };
 }
 
 export async function createPostAction(formData: FormData) {
-  const { title, excerpt, contentHtml, coverImage, publishNow, metaTitle, metaDescription } = readPostFields(formData);
+  const { title, excerpt, contentHtml, publishNow, metaTitle, metaDescription } = readPostFields(formData);
   if (!title || !contentHtml) return;
 
   const post = await prisma.post.create({
@@ -37,7 +39,6 @@ export async function createPostAction(formData: FormData) {
       slug: slugify(title),
       excerpt,
       contentHtml,
-      coverImage,
       publishedAt: publishNow ? new Date() : null,
       metaTitle,
       metaDescription,
@@ -48,7 +49,7 @@ export async function createPostAction(formData: FormData) {
 }
 
 export async function updatePostAction(id: string, formData: FormData) {
-  const { title, excerpt, contentHtml, coverImage, publishNow, metaTitle, metaDescription } = readPostFields(formData);
+  const { title, excerpt, contentHtml, publishNow, metaTitle, metaDescription } = readPostFields(formData);
   if (!title || !contentHtml) return;
 
   const existing = await prisma.post.findUnique({ where: { id } });
@@ -58,7 +59,6 @@ export async function updatePostAction(id: string, formData: FormData) {
       title,
       excerpt,
       contentHtml,
-      coverImage,
       publishedAt: publishNow ? (existing?.publishedAt ?? new Date()) : null,
       metaTitle,
       metaDescription,

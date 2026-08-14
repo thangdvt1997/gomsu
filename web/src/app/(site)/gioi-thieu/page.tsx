@@ -12,7 +12,7 @@ export default function AboutPage() {
   return (
     <>
       <div className="page-hero">
-        <img className="bg" src="/media/site/workshop-1-thumb.jpg" alt="" />
+        <img className="bg" src="/media/site/workshop-1.jpg" alt="" />
         <div className="container">
           <div className="breadcrumb">
             <Link href="/">Trang chủ</Link>
