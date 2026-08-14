@@ -16,4 +16,8 @@ export default auth((req) => {
 
 export const config = {
   matcher: ["/admin/:path*"],
+  // The full Auth.js config (Credentials provider) pulls in bcryptjs, which
+  // uses Node-only APIs (setImmediate/process.nextTick) not available on
+  // the Edge runtime middleware defaults to -- run this on Node.js instead.
+  runtime: "nodejs",
 };

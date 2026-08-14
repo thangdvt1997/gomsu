@@ -8,7 +8,7 @@ export default async function AdminProductsPage() {
   const products = await prisma.product.findMany({
     include: {
       category: { select: { label: true } },
-      sizes: { select: { priceVnd: true } },
+      sizes: { select: { priceVnd: true, heightCm: true, mouthCm: true } },
       images: { select: { thumbUrl: true, url: true }, orderBy: { sortOrder: "asc" }, take: 1 },
     },
     orderBy: { createdAt: "asc" },
