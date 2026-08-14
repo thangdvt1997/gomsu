@@ -69,6 +69,25 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # One-off Prisma CLI access (migrate deploy, ad-hoc scripts) against the
+  # live `app` database, using the `builder` stage which still has the full
+  # devDependencies (the `app` runtime image strips the Prisma CLI down to
+  # just the generated client to keep the image small). Not started by a
+  # plain `docker compose up`; run explicitly with e.g.:
+  #   docker compose --profile tools run --rm migrate npx prisma migrate deploy
+  migrate:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      target: builder
+    image: gomsu-app-builder:latest
+    environment:
+      - DATABASE_URL=postgresql://gomsu:${DB_PASSWORD:-changeme}@postgres:5432/gomsu
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles: ["tools"]
+
   # Playwright parity/CMS/payment suite against the new stack. Not started
   # by a plain `docker compose up`; run explicitly with:
   #   docker compose --profile test run --rm e2e
