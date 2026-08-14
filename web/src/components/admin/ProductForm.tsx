@@ -1,4 +1,4 @@
-import { MAX_SIZE_ROWS } from "@/lib/actions/admin-products";
+import { MAX_SIZE_ROWS } from "@/lib/constants";
 
 type Category = { id: string; label: string };
 type Glaze = { id: string; key: string; label: string; hex: string };

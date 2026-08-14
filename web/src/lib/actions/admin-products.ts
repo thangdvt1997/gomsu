@@ -3,9 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { MAX_SIZE_ROWS } from "@/lib/constants";
 
 const COMBINING_MARKS = /[̀-ͯ]/g;
-export const MAX_SIZE_ROWS = 6;
 
 function slugify(s: string) {
   return s
