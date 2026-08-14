@@ -1,19 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test("add-to-cart -> checkout -> VNPay redirect is validly signed", async ({ page }) => {
-  // Intercept the navigation to VNPay's real domain instead of letting the
-  // browser actually reach it: staging/CI only has placeholder
-  // VNPAY_TMN_CODE/HASH_SECRET (no real merchant account yet), so VNPay's
-  // own server would reject them and could redirect/rewrite the URL in an
-  // unpredictable way that has nothing to do with whether *our* signing
-  // code is correct. Fulfilling the request locally lets us assert on the
-  // exact URL our server built without depending on VNPay's live response.
-  let capturedUrl: string | null = null;
-  await page.route("https://sandbox.vnpayment.vn/**", async (route) => {
-    capturedUrl = route.request().url();
-    await route.fulfill({ status: 200, contentType: "text/plain", body: "stubbed" });
-  });
-
+test("add-to-cart -> checkout -> VietQR payment page shows the order and QR code", async ({ page }) => {
   await page.goto("/san-pham/chum-2-tai");
   await page.click('button:has-text("Thêm vào giỏ")');
   await expect(page.locator('button:has-text("Đã thêm vào giỏ")')).toBeVisible();
@@ -28,14 +15,18 @@ test("add-to-cart -> checkout -> VNPay redirect is validly signed", async ({ pag
   await page.fill('input[name="customerPhone"]', "0912345678");
   await page.fill('input[name="shippingAddress"]', "123 Test Street, Ha Noi");
 
-  await page.click('button:has-text("Thanh toán qua VNPay")');
-  await expect.poll(() => capturedUrl, { timeout: 10_000 }).not.toBeNull();
+  await page.click('button:has-text("Lấy mã QR chuyển khoản")');
+  await page.waitForURL(/\/thanh-toan\/vietqr\/[a-z0-9]{20,}$/, { timeout: 10_000 });
 
-  const url = new URL(capturedUrl!);
-  expect(url.hostname).toBe("sandbox.vnpayment.vn");
-  expect(url.searchParams.get("vnp_TxnRef")).toBeTruthy();
-  expect(url.searchParams.get("vnp_SecureHash")).toBeTruthy();
-  expect(url.searchParams.get("vnp_Command")).toBe("pay");
+  await expect(page.locator("body")).toContainText("Chum 2 Tai");
+  await expect(page.locator("body")).toContainText("GSM-");
+
+  // Must show either the real QR image (VIETQR_BANK_ID/ACCOUNT_NO
+  // configured) or a clear "not configured" fallback message -- never
+  // neither, which would be a silently broken checkout page.
+  const hasQr = await page.locator('img[alt*="Mã VietQR"]').count();
+  const hasFallbackMessage = await page.locator("text=Chưa cấu hình tài khoản").count();
+  expect(hasQr + hasFallbackMessage).toBeGreaterThan(0);
 });
 
 test("a fully Lien-he (null-price) product has no add-to-cart button, only a quote request", async ({ page }) => {

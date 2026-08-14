@@ -89,7 +89,7 @@ export default function CheckoutPage() {
           )}
           <div className="field full">
             <button className="btn btn-primary btn-block" type="submit" disabled={submitting}>
-              {submitting ? "Đang xử lý..." : `Thanh toán qua VNPay — ${formatVnd(cartTotal(items))}`}
+              {submitting ? "Đang xử lý..." : `Lấy mã QR chuyển khoản — ${formatVnd(cartTotal(items))}`}
             </button>
           </div>
         </form>

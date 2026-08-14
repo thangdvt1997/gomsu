@@ -125,10 +125,16 @@ enum OrderStatus {
   REFUNDED
 }
 
+enum PaymentMethod {
+  VIETQR
+  VNPAY
+}
+
 model Order {
-  id               String      @id @default(cuid())
-  orderNumber      String      @unique
-  status           OrderStatus @default(PENDING)
+  id               String        @id @default(cuid())
+  orderNumber      String        @unique
+  status           OrderStatus   @default(PENDING)
+  paymentMethod    PaymentMethod @default(VIETQR)
   customerName     String
   customerPhone    String
   customerEmail    String?
@@ -136,14 +142,17 @@ model Order {
   note             String?
   subtotalVnd      Int
   totalVnd         Int
-  vnpTxnRef        String?     @unique
+  // VNPay-specific reconciliation fields -- unused while paymentMethod is
+  // VIETQR (manual bank-transfer confirmation instead), kept for when a
+  // real VNPay merchant account exists and paymentMethod=VNPAY is used again.
+  vnpTxnRef        String?       @unique
   vnpTransactionNo String?
   vnpBankCode      String?
   vnpResponseCode  String?
   vnpPayDate       String?
   paidAt           DateTime?
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   items OrderItem[]
 }

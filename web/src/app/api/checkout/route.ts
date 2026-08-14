@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { buildVnpayPaymentUrl } from "@/lib/vnpay/client";
 
 const checkoutSchema = z.object({
   customerName: z.string().trim().min(1).max(200),
@@ -13,12 +12,6 @@ const checkoutSchema = z.object({
     .array(z.object({ productId: z.string(), sizeId: z.string(), qty: z.number().int().min(1).max(9999) }))
     .min(1),
 });
-
-function getClientIp(req: NextRequest): string {
-  const forwarded = req.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0].trim();
-  return req.headers.get("x-real-ip") ?? "127.0.0.1";
-}
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -68,12 +61,12 @@ export async function POST(req: NextRequest) {
 
   const totalVnd = orderItemsData.reduce((sum, i) => sum + i.lineTotalVnd, 0);
   const orderNumber = `GSM-${Date.now()}`;
-  const vnpTxnRef = orderNumber;
 
   const order = await prisma.order.create({
     data: {
       orderNumber,
       status: "PENDING",
+      paymentMethod: "VIETQR",
       customerName,
       customerPhone,
       customerEmail: customerEmail || null,
@@ -81,17 +74,16 @@ export async function POST(req: NextRequest) {
       note: note || null,
       subtotalVnd: totalVnd,
       totalVnd,
-      vnpTxnRef,
       items: { create: orderItemsData },
     },
   });
 
-  const redirectUrl = buildVnpayPaymentUrl({
-    txnRef: vnpTxnRef,
-    amountVnd: totalVnd,
-    orderInfo: `Thanh toan don hang ${orderNumber}`,
-    ipAddr: getClientIp(req),
+  // VietQR is a static bank-transfer QR, not a hosted payment page -- send
+  // the customer to our own confirmation page (which renders the QR code)
+  // rather than an external redirect URL like the VNPay flow used.
+  return NextResponse.json({
+    orderId: order.id,
+    orderNumber,
+    redirectUrl: `/thanh-toan/vietqr/${order.id}`,
   });
-
-  return NextResponse.json({ orderId: order.id, orderNumber, redirectUrl });
 }
