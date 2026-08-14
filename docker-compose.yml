@@ -27,3 +27,47 @@ services:
       web:
         condition: service_healthy
     profiles: ["test"]
+
+  # --- New Next.js CMS/e-commerce stack (staging port, does not touch `web`
+  # above). See d:\work-out\gomsu\web and the rollout plan in
+  # C:\Users\thangdv\.claude\plans\keen-juggling-bubble.md. `web`/8899 keeps
+  # serving production traffic until this stack passes parity testing and
+  # the nginx proxy_pass target is deliberately cut over (deploy/cutover.sh).
+  postgres:
+    image: postgres:16-alpine
+    container_name: gomsu-postgres
+    environment:
+      - POSTGRES_USER=gomsu
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-changeme}
+      - POSTGRES_DB=gomsu
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gomsu"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    image: gomsu-app:latest
+    container_name: gomsu-app
+    env_file:
+      - ./web/.env
+    environment:
+      - DATABASE_URL=postgresql://gomsu:${DB_PASSWORD:-changeme}@postgres:5432/gomsu
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    volumes:
+      - uploads_data:/app/public/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  uploads_data:
