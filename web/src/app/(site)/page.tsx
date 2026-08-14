@@ -24,13 +24,19 @@ const productSelect = {
 };
 
 export default async function HomePage() {
-  const [categories, featured] = await Promise.all([
+  const [categories, featured, testimonials] = await Promise.all([
     prisma.category.findMany({ orderBy: { sortOrder: "asc" } }),
     prisma.product.findMany({
       where: { featured: true, isDraft: false },
       select: productSelect,
       take: 9,
       orderBy: { createdAt: "asc" },
+    }),
+    prisma.review.findMany({
+      where: { status: "APPROVED" },
+      include: { product: { select: { name: true, slug: true } } },
+      orderBy: [{ rating: "desc" }, { createdAt: "desc" }],
+      take: 3,
     }),
   ]);
 
@@ -71,19 +77,19 @@ export default async function HomePage() {
           </div>
           <div className="hero-stats">
             <div>
-              <b>60+</b>
+              <b data-count-to="60" data-suffix="+">0</b>
               <span>mẫu lọ hoa</span>
             </div>
             <div>
-              <b>20+</b>
+              <b data-count-to="20" data-suffix="+">0</b>
               <span>năm làm nghề</span>
             </div>
             <div>
-              <b>13+</b>
+              <b data-count-to="13" data-suffix="+">0</b>
               <span>tông men đặc trưng</span>
             </div>
             <div>
-              <b>63</b>
+              <b data-count-to="63" data-suffix="">0</b>
               <span>tỉnh thành giao hàng</span>
             </div>
           </div>
@@ -153,6 +159,34 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {testimonials.length > 0 && (
+        <section>
+          <div className="container">
+            <div className="section-head center" data-reveal>
+              <span className="eyebrow">Khách hàng nói gì</span>
+              <h2>Được Tin Dùng Bởi Khách Hàng Khắp Cả Nước</h2>
+            </div>
+            <div className="testimonial-grid" data-reveal>
+              {testimonials.map((t) => (
+                <div className="testimonial-card" key={t.id}>
+                  <span className="quote-mark">&ldquo;</span>
+                  <div className="stars" style={{ marginBottom: 10 }}>
+                    {"★".repeat(t.rating)}
+                    {"☆".repeat(5 - t.rating)}
+                  </div>
+                  {t.title && <h4 style={{ marginBottom: 6 }}>{t.title}</h4>}
+                  <p style={{ color: "var(--ink-soft)" }}>{t.comment}</p>
+                  <div className="testimonial-author">
+                    <b>{t.customerName}</b>
+                    {t.product && <Link href={`/san-pham/${t.product.slug}`}>Đã mua {t.product.name}</Link>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="bg-alt">
         <div className="container">

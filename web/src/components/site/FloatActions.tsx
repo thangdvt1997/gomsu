@@ -30,6 +30,11 @@ export function FloatActions() {
           />
         </svg>
       </a>
+      <button className="float-btn back-to-top" data-back-to-top aria-label="Lên đầu trang" title="Lên đầu trang">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M12 19V5M5 12l7-7 7 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
     </div>
   );
 }

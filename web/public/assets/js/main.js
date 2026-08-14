@@ -13,6 +13,8 @@
     initVariantPicker();
     initScrollReveal();
     initHeaderShadow();
+    initStatCounters();
+    initBackToTop();
   });
 
   /* ---------------- Mobile nav ---------------- */
@@ -250,6 +252,42 @@
     }
     if (qParam && searchInput) { searchInput.value = qParam; }
     apply();
+  }
+
+  /* ---------------- Animated stat counters (hero) ---------------- */
+  function initStatCounters() {
+    var els = document.querySelectorAll("[data-count-to]");
+    if (!els.length) return;
+    var prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function animate(el) {
+      var target = parseInt(el.getAttribute("data-count-to"), 10) || 0;
+      var suffix = el.getAttribute("data-suffix") || "";
+      if (prefersReduced) { el.textContent = target + suffix; return; }
+      var duration = 1400;
+      var start = null;
+      function step(ts) {
+        if (!start) start = ts;
+        var progress = Math.min((ts - start) / duration, 1);
+        var eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(eased * target) + suffix;
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+    els.forEach(animate);
+  }
+
+  /* ---------------- Back to top ---------------- */
+  function initBackToTop() {
+    var btn = document.querySelector("[data-back-to-top]");
+    if (!btn) return;
+    window.addEventListener("scroll", function () {
+      btn.classList.toggle("is-visible", window.scrollY > 500);
+    });
+    btn.addEventListener("click", function () {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
   }
 
   /* ---------------- Scroll reveal (simple fade-up) ---------------- */
