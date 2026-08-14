@@ -2,6 +2,7 @@
 
 import path from "node:path";
 import { mkdir } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
@@ -69,4 +70,27 @@ export async function uploadPostCoverAction(postId: string, formData: FormData) 
   revalidatePath(`/admin/posts/${postId}`);
   revalidatePath("/tin-tuc");
   revalidatePath(`/tin-tuc/${post.slug}`);
+}
+
+// Used by the rich-text editor toolbar to insert an image inline in the
+// post body. Not tied to a specific Post row (the post may not be saved
+// yet on the "new post" screen), so it just returns a URL to embed.
+export async function uploadPostContentImageAction(
+  formData: FormData,
+): Promise<{ url: string } | { error: string }> {
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return { error: "Không có ảnh" };
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const dir = path.join(MEDIA_DIR, "posts", "inline");
+  await mkdir(dir, { recursive: true });
+
+  const filename = randomUUID();
+  await sharp(buffer)
+    .rotate()
+    .resize(1400, 1400, { fit: "inside", withoutEnlargement: true })
+    .jpeg({ quality: 85 })
+    .toFile(path.join(dir, `${filename}.jpg`));
+
+  return { url: `/media/posts/inline/${filename}.jpg` };
 }

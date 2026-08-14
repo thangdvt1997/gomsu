@@ -68,3 +68,44 @@
 .login-card { width: 360px; background: var(--a-panel); border: 1px solid var(--a-line); border-radius: var(--a-radius); padding: 32px; }
 .login-card h1 { font-size: 1.2rem; margin: 0 0 4px; }
 .login-card p { color: var(--a-ink-soft); font-size: .88rem; margin: 0 0 20px; }
+
+/* ---------- Post form layout ---------- */
+.post-form-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+.post-form-side { position: sticky; top: 20px; display: flex; flex-direction: column; }
+.post-title-input { font-size: 1.15rem; font-weight: 700; padding: 12px 14px; }
+.char-counter { margin: 0; font-size: .78rem; color: var(--a-ink-soft); }
+.char-counter.is-over { color: #a83232; }
+@media (max-width: 900px) {
+  .post-form-layout { grid-template-columns: 1fr; }
+  .post-form-side { position: static; }
+}
+
+/* ---------- Rich text editor (Tiptap) ---------- */
+.rte-wrap { border: 1.5px solid var(--a-line); border-radius: 8px; overflow: hidden; background: #fff; }
+.rte-loading { padding: 40px; text-align: center; color: var(--a-ink-soft); font-size: .9rem; }
+.rte-toolbar {
+  display: flex; flex-wrap: wrap; gap: 4px; padding: 8px; background: var(--a-bg);
+  border-bottom: 1.5px solid var(--a-line);
+}
+.rte-btn {
+  border: 1px solid transparent; background: transparent; border-radius: 6px; padding: 7px 11px;
+  font-size: .82rem; font-weight: 700; color: var(--a-ink); cursor: pointer; white-space: nowrap;
+}
+.rte-btn:hover { background: #fff; border-color: var(--a-line); }
+.rte-btn.is-active { background: #f6e9df; border-color: var(--a-accent); color: var(--a-accent-dark); }
+.rte-btn:disabled { opacity: .5; cursor: not-allowed; }
+.rte-sep { width: 1px; background: var(--a-line); margin: 4px 4px; }
+.rte-content { padding: 18px 20px; min-height: 340px; font-size: .98rem; line-height: 1.7; outline: none; }
+.rte-content h2 { font-size: 1.3rem; margin: 1em 0 .4em; }
+.rte-content h3 { font-size: 1.1rem; margin: 1em 0 .4em; }
+.rte-content p { margin: 0 0 1em; }
+.rte-content ul, .rte-content ol { padding-left: 1.3em; margin: 0 0 1em; }
+.rte-content img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
+.rte-content blockquote {
+  margin: 1em 0; padding: 10px 18px; border-left: 3px solid var(--a-accent);
+  background: var(--a-bg); color: var(--a-ink-soft); font-style: italic;
+}
+.rte-content a { color: var(--a-accent-dark); text-decoration: underline; }
+.rte-content p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder); float: left; height: 0; color: var(--a-ink-soft); opacity: .7; pointer-events: none;
+}

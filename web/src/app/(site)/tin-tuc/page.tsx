@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
+import { estimateReadingMinutes } from "@/lib/reading-time";
 
 export const metadata: Metadata = {
   title: "Tin Tức & Cẩm Nang Gốm Sứ",
@@ -17,8 +18,10 @@ function formatDate(d: Date) {
 export default async function BlogIndexPage() {
   const posts = await prisma.post.findMany({
     where: { publishedAt: { not: null } },
-    orderBy: { publishedAt: "asc" },
+    orderBy: { publishedAt: "desc" },
   });
+
+  const [latest, ...rest] = posts;
 
   return (
     <>
@@ -37,27 +40,61 @@ export default async function BlogIndexPage() {
           </p>
         </div>
       </div>
-      <section className="section-tight">
-        <div className="container grid-3">
-          {posts.map((post) => (
-            <article className="article-card" data-reveal key={post.slug}>
-              <Link className="thumb" href={`/tin-tuc/${post.slug}`}>
-                <img src={post.coverImage ?? "/assets/img/placeholder.svg"} alt={post.title} loading="lazy" />
+
+      {posts.length === 0 ? (
+        <section className="section-tight">
+          <div className="container empty-state">Chưa có bài viết nào, quay lại sau nhé.</div>
+        </section>
+      ) : (
+        <section className="section-tight">
+          <div className="container">
+            {latest && (
+              <Link href={`/tin-tuc/${latest.slug}`} className="article-featured" data-reveal>
+                <div className="thumb">
+                  <img src={latest.coverImage ?? "/assets/img/placeholder.svg"} alt={latest.title} />
+                </div>
+                <div className="body">
+                  <span className="eyebrow">Bài viết mới nhất</span>
+                  <h2>{latest.title}</h2>
+                  <p>{latest.excerpt}</p>
+                  <div className="meta-row">
+                    <span>{latest.publishedAt && formatDate(latest.publishedAt)}</span>
+                    <span>·</span>
+                    <span>{estimateReadingMinutes(latest.contentHtml)} phút đọc</span>
+                  </div>
+                  <span className="btn btn-sm btn-outline">Đọc tiếp</span>
+                </div>
               </Link>
-              <div className="body">
-                <span className="date">{post.publishedAt && formatDate(post.publishedAt)}</span>
-                <h3 style={{ margin: "8px 0" }}>
-                  <Link href={`/tin-tuc/${post.slug}`}>{post.title}</Link>
-                </h3>
-                <p style={{ color: "var(--ink-soft)", fontSize: ".92rem" }}>{post.excerpt}</p>
-                <Link className="btn btn-sm btn-outline" href={`/tin-tuc/${post.slug}`}>
-                  Đọc tiếp
-                </Link>
+            )}
+
+            {rest.length > 0 && (
+              <div className="grid-3" style={{ marginTop: 44 }}>
+                {rest.map((post) => (
+                  <article className="article-card" data-reveal key={post.slug}>
+                    <Link className="thumb" href={`/tin-tuc/${post.slug}`}>
+                      <img src={post.coverImage ?? "/assets/img/placeholder.svg"} alt={post.title} loading="lazy" />
+                    </Link>
+                    <div className="body">
+                      <div className="meta-row">
+                        <span className="date">{post.publishedAt && formatDate(post.publishedAt)}</span>
+                        <span>·</span>
+                        <span>{estimateReadingMinutes(post.contentHtml)} phút đọc</span>
+                      </div>
+                      <h3>
+                        <Link href={`/tin-tuc/${post.slug}`}>{post.title}</Link>
+                      </h3>
+                      <p style={{ color: "var(--ink-soft)", fontSize: ".92rem" }}>{post.excerpt}</p>
+                      <Link className="btn btn-sm btn-outline" href={`/tin-tuc/${post.slug}`}>
+                        Đọc tiếp
+                      </Link>
+                    </div>
+                  </article>
+                ))}
               </div>
-            </article>
-          ))}
-        </div>
-      </section>
+            )}
+          </div>
+        </section>
+      )}
     </>
   );
 }

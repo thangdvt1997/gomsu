@@ -5,6 +5,8 @@ import { prisma } from "@/lib/db";
 import { COMPANY } from "@/lib/site-config";
 import { resolveMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
+import { ShareButtons } from "@/components/site/ShareButtons";
+import { estimateReadingMinutes } from "@/lib/reading-time";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://gomceramic.com";
 
@@ -42,6 +44,12 @@ export default async function BlogPostPage({
   const post = await prisma.post.findUnique({ where: { slug } });
   if (!post) notFound();
 
+  const relatedPosts = await prisma.post.findMany({
+    where: { publishedAt: { not: null }, slug: { not: slug } },
+    orderBy: { publishedAt: "desc" },
+    take: 3,
+  });
+
   const breadcrumb = breadcrumbJsonLd([
     { name: "Trang chủ", url: siteUrl },
     { name: "Tin tức", url: `${siteUrl}/tin-tuc` },
@@ -63,7 +71,8 @@ export default async function BlogPostPage({
           </div>
           <h1 style={{ maxWidth: "32ch" }}>{post.title}</h1>
           <p style={{ color: "rgba(255,255,255,.7)", fontSize: ".85rem" }}>
-            {post.publishedAt && formatDate(post.publishedAt)} · {COMPANY.name}
+            {post.publishedAt && formatDate(post.publishedAt)} · {estimateReadingMinutes(post.contentHtml)} phút đọc
+            · {COMPANY.name}
           </p>
         </div>
       </div>
@@ -72,6 +81,9 @@ export default async function BlogPostPage({
           <div className="article-body">
             {post.coverImage && <img src={post.coverImage} alt={post.title} loading="lazy" />}
             <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
+
+            <ShareButtons url={`${siteUrl}/tin-tuc/${post.slug}`} title={post.title} />
+
             <div
               className="cta-band"
               style={{ marginTop: 50, background: "var(--clay-100)", color: "var(--ink)" }}
@@ -87,6 +99,30 @@ export default async function BlogPostPage({
               </a>
             </div>
           </div>
+
+          {relatedPosts.length > 0 && (
+            <div style={{ maxWidth: 1080, margin: "70px auto 0" }}>
+              <h2 style={{ fontSize: "1.4rem", marginBottom: 26 }}>Bài viết khác</h2>
+              <div className="grid-3">
+                {relatedPosts.map((rp) => (
+                  <article className="article-card" key={rp.slug}>
+                    <Link className="thumb" href={`/tin-tuc/${rp.slug}`}>
+                      <img src={rp.coverImage ?? "/assets/img/placeholder.svg"} alt={rp.title} loading="lazy" />
+                    </Link>
+                    <div className="body">
+                      <span className="date">{rp.publishedAt && formatDate(rp.publishedAt)}</span>
+                      <h3 style={{ margin: "8px 0" }}>
+                        <Link href={`/tin-tuc/${rp.slug}`}>{rp.title}</Link>
+                      </h3>
+                      <Link className="btn btn-sm btn-outline" href={`/tin-tuc/${rp.slug}`}>
+                        Đọc tiếp
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </>
