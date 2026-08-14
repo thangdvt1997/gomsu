@@ -561,7 +561,19 @@ table.price-table .pprice{ font-weight:700; color:var(--terracotta-dark); white-
 }
 [data-reveal].is-visible{ opacity:1; transform:translateY(0); }
 
-.product-grid > *, .value-grid > *, .about-gallery > *, .grid-3 > *, .grid-2 > *, .timeline > * {
+/* Only grids that explicitly opt in via [data-reveal] on the SAME element
+   get the staggered pre-hidden state -- a bare class selector here would
+   set opacity:0 on children of every .product-grid/.value-grid/etc. on
+   every page, including the many that don't carry [data-reveal] on the
+   container (catalog page, glaze landing pages, blog listing...), leaving
+   them permanently invisible with nothing to ever flip them back to
+   visible. This bug shipped once already; do not repeat it. */
+[data-reveal].product-grid > *,
+[data-reveal].value-grid > *,
+[data-reveal].about-gallery > *,
+[data-reveal].grid-3 > *,
+[data-reveal].grid-2 > *,
+[data-reveal].timeline > * {
   opacity:0; transform:translateY(22px);
   transition:opacity .6s ease, transform .6s ease;
 }
