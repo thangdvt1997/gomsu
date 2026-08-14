@@ -26,6 +26,12 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
+# Next's standalone server binds only to the container's assigned Docker
+# network IP by default, not 0.0.0.0/loopback -- without this, the
+# in-container healthcheck (and anything else hitting 127.0.0.1) gets
+# "connection refused" even though the app is actually up and reachable via
+# the port mapping from the host.
+ENV HOSTNAME="0.0.0.0"
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
   CMD wget -qO- http://127.0.0.1:3000/api/health >/dev/null || exit 1
 CMD ["node", "server.js"]
