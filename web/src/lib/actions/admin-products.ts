@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { MAX_SIZE_ROWS } from "@/lib/constants";
+import { pingIndexNow } from "@/lib/indexnow";
 
 const COMBINING_MARKS = /[̀-ͯ]/g;
 
@@ -86,6 +87,7 @@ export async function createProductAction(formData: FormData) {
   });
 
   revalidatePath("/admin/products");
+  if (!isDraft) pingIndexNow([`/san-pham/${slug}`]);
   redirect(`/admin/products/${product.id}`);
 }
 
@@ -135,6 +137,11 @@ export async function updateProductAction(id: string, formData: FormData) {
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}`);
   revalidatePath(`/san-pham`);
+
+  if (!isDraft) {
+    const product = await prisma.product.findUnique({ where: { id }, select: { slug: true } });
+    if (product) pingIndexNow([`/san-pham/${product.slug}`]);
+  }
 }
 
 export async function deleteProductAction(id: string) {

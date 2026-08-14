@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { pingIndexNow } from "@/lib/indexnow";
 
 const COMBINING_MARKS = /[̀-ͯ]/g;
 
@@ -45,6 +46,7 @@ export async function createPostAction(formData: FormData) {
     },
   });
   revalidatePath("/admin/posts");
+  if (publishNow) pingIndexNow([`/tin-tuc/${post.slug}`]);
   redirect(`/admin/posts/${post.id}`);
 }
 
@@ -53,7 +55,7 @@ export async function updatePostAction(id: string, formData: FormData) {
   if (!title || !contentHtml) return;
 
   const existing = await prisma.post.findUnique({ where: { id } });
-  await prisma.post.update({
+  const post = await prisma.post.update({
     where: { id },
     data: {
       title,
@@ -67,6 +69,7 @@ export async function updatePostAction(id: string, formData: FormData) {
   revalidatePath("/admin/posts");
   revalidatePath(`/admin/posts/${id}`);
   revalidatePath("/tin-tuc");
+  if (publishNow) pingIndexNow([`/tin-tuc/${post.slug}`]);
 }
 
 export async function deletePostAction(id: string) {
