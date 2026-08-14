@@ -1,9 +1,17 @@
+import { SeoScoreWidget } from "@/components/admin/SeoScoreWidget";
+
 export function SeoEditorPanel({
   metaTitle,
   metaDescription,
+  titleFieldName = "name",
+  contentFieldName,
 }: {
   metaTitle?: string | null;
   metaDescription?: string | null;
+  /** Name of the main title field on this form ("name" for products, "title" for posts). */
+  titleFieldName?: string;
+  /** Name of the main content field, if this entity has long-form content (e.g. "contentHtml"). */
+  contentFieldName?: string;
 }) {
   return (
     <div className="admin-panel" style={{ marginBottom: 20 }}>
@@ -16,6 +24,12 @@ export function SeoEditorPanel({
         <label>Meta description</label>
         <textarea name="metaDescription" defaultValue={metaDescription ?? ""} rows={2} />
       </div>
+      <SeoScoreWidget
+        titleName={titleFieldName}
+        metaTitleName="metaTitle"
+        metaDescriptionName="metaDescription"
+        contentName={contentFieldName}
+      />
     </div>
   );
 }

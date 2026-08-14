@@ -55,6 +55,28 @@ export function priceRowParts(s: { label: string | null } & SizeLike): { dims: s
   return { dims: `${prefix}${dims}`, price };
 }
 
+const LOW_STOCK_THRESHOLD = 5;
+
+type StockSizeLike = { priceVnd: number | null; stockQty: number | null };
+
+export type StockBadge = { type: "out" | "low"; qty?: number };
+
+/**
+ * stockQty is nullable per size on purpose -- null means "not tracked",
+ * i.e. always treated as in stock (matches every size before this feature
+ * existed). Only sizes that actually have a number set participate here.
+ */
+export function stockBadge(sizes: StockSizeLike[]): StockBadge | null {
+  const tracked = sizes.filter(
+    (s): s is StockSizeLike & { stockQty: number } => s.priceVnd !== null && s.stockQty !== null,
+  );
+  if (!tracked.length) return null;
+  const maxQty = Math.max(...tracked.map((s) => s.stockQty));
+  if (maxQty <= 0) return { type: "out" };
+  if (maxQty <= LOW_STOCK_THRESHOLD) return { type: "low", qty: maxQty };
+  return null;
+}
+
 export function dimsLabel(sizes: SizeLike[]): string {
   if (!sizes.length) return "";
   const first = sizes[0];

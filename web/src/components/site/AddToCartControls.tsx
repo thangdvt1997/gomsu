@@ -12,6 +12,7 @@ type Size = {
   heightCm: unknown;
   mouthCm: unknown;
   priceVnd: number | null;
+  stockQty: number | null;
 };
 type Glaze = { key: string; label: string; hex: string };
 
@@ -33,7 +34,8 @@ export function AddToCartControls({
   colors: Glaze[];
 }) {
   const priced = sizes.filter((s) => s.priceVnd !== null);
-  const [selectedSizeId, setSelectedSizeId] = useState<string | null>(priced[0]?.id ?? null);
+  const firstInStock = priced.find((s) => s.stockQty !== 0);
+  const [selectedSizeId, setSelectedSizeId] = useState<string | null>((firstInStock ?? priced[0])?.id ?? null);
   const [selectedGlaze, setSelectedGlaze] = useState<string | null>(colors[0]?.label ?? null);
   const [qty, setQty] = useState(50);
   const [added, setAdded] = useState(false);
@@ -43,9 +45,10 @@ export function AddToCartControls({
   const addItem = useCartStore((s) => s.addItem);
 
   const selectedSize = sizes.find((s) => s.id === selectedSizeId);
+  const maxQty = selectedSize?.stockQty ?? 999;
 
   function handleAddToCart() {
-    if (!selectedSize || selectedSize.priceVnd === null) return;
+    if (!selectedSize || selectedSize.priceVnd === null || selectedSize.stockQty === 0) return;
     addItem(
       {
         productId,
@@ -73,18 +76,23 @@ export function AddToCartControls({
             <div className="variant-options">
               {sizes.map((s) => {
                 const isLienHe = s.priceVnd === null;
+                const outOfStock = s.stockQty === 0;
+                const lowStock = s.stockQty !== null && s.stockQty > 0 && s.stockQty <= 5;
+                const disabled = isLienHe || outOfStock;
                 return (
                   <button
                     key={s.id}
                     type="button"
                     className={`variant-pill${selectedSizeId === s.id ? " is-active" : ""}`}
-                    onClick={() => !isLienHe && setSelectedSizeId(s.id)}
-                    disabled={isLienHe}
-                    style={isLienHe ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
-                    title={isLienHe ? "Liên hệ để biết giá" : undefined}
+                    onClick={() => !disabled && setSelectedSizeId(s.id)}
+                    disabled={disabled}
+                    style={disabled ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
+                    title={isLienHe ? "Liên hệ để biết giá" : outOfStock ? "Tạm hết hàng" : undefined}
                   >
                     {sizeVariantLabel(s, sizes.length === 1)}
                     {isLienHe && " (Liên hệ)"}
+                    {outOfStock && " (Hết hàng)"}
+                    {!outOfStock && lowStock && ` (Chỉ còn ${s.stockQty})`}
                   </button>
                 );
               })}
@@ -118,10 +126,10 @@ export function AddToCartControls({
                 type="text"
                 value={qty}
                 inputMode="numeric"
-                onChange={(e) => setQty(Math.max(1, Math.min(999, parseInt(e.target.value, 10) || 1)))}
+                onChange={(e) => setQty(Math.max(1, Math.min(maxQty, parseInt(e.target.value, 10) || 1)))}
                 aria-label="Số lượng đặt"
               />
-              <button type="button" onClick={() => setQty((q) => Math.min(999, q + 1))} aria-label="Tăng số lượng">
+              <button type="button" onClick={() => setQty((q) => Math.min(maxQty, q + 1))} aria-label="Tăng số lượng">
                 +
               </button>
             </div>
@@ -131,8 +139,17 @@ export function AddToCartControls({
           </div>
 
           <div className="pd-cta">
-            <button className="btn btn-primary" type="button" onClick={handleAddToCart} disabled={!selectedSize}>
-              {added ? "Đã thêm vào giỏ ✓" : `Thêm vào giỏ — ${selectedSize ? formatVnd(selectedSize.priceVnd!) : ""}`}
+            <button
+              className="btn btn-primary"
+              type="button"
+              onClick={handleAddToCart}
+              disabled={!selectedSize || selectedSize.stockQty === 0}
+            >
+              {added
+                ? "Đã thêm vào giỏ ✓"
+                : selectedSize?.stockQty === 0
+                  ? "Tạm hết hàng"
+                  : `Thêm vào giỏ — ${selectedSize ? formatVnd(selectedSize.priceVnd!) : ""}`}
             </button>
             <button className="btn btn-outline" type="button" onClick={() => router.push("/gio-hang")}>
               Xem giỏ hàng

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { dimsLabel, minPrice, priceLabel } from "@/lib/format";
+import { dimsLabel, minPrice, priceLabel, stockBadge } from "@/lib/format";
+import { WishlistButton } from "@/components/site/WishlistButton";
 
 export type ProductCardData = {
   slug: string;
@@ -7,7 +8,7 @@ export type ProductCardData = {
   name: string;
   featured: boolean;
   category: { slug: string; label: string };
-  sizes: { label: string | null; heightCm: unknown; mouthCm: unknown; priceVnd: number | null }[];
+  sizes: { label: string | null; heightCm: unknown; mouthCm: unknown; priceVnd: number | null; stockQty: number | null }[];
   colors: { glaze: { key: string; label: string; hex: string } }[];
   images: { url: string; thumbUrl: string | null }[];
 };
@@ -15,6 +16,7 @@ export type ProductCardData = {
 export function ProductCard({ product, order }: { product: ProductCardData; order: number }) {
   const thumb = product.images[0]?.thumbUrl ?? product.images[0]?.url ?? "/assets/img/placeholder.svg";
   const colorKeys = product.colors.map((c) => c.glaze.key).join(",");
+  const stock = stockBadge(product.sizes);
 
   return (
     <article
@@ -36,6 +38,9 @@ export function ProductCard({ product, order }: { product: ProductCardData; orde
         />
         <span className="code">{product.code}</span>
         {product.featured && <span className="badge-new">Nổi bật</span>}
+        {stock?.type === "out" && <span className="badge-stock out">Hết hàng</span>}
+        {stock?.type === "low" && <span className="badge-stock low">Chỉ còn {stock.qty}</span>}
+        <WishlistButton productSlug={product.slug} />
       </Link>
       <div className="body">
         <span className="cat">{product.category.label}</span>

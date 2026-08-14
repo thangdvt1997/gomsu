@@ -4,6 +4,7 @@ import { Header } from "@/components/site/Header";
 import { MobileNav } from "@/components/site/MobileNav";
 import { Footer } from "@/components/site/Footer";
 import { FloatActions, Lightbox } from "@/components/site/FloatActions";
+import { UtmCapture } from "@/components/site/UtmCapture";
 
 // This layout reads Category from Postgres for the footer nav, so the whole
 // (site) route group must render dynamically -- a static/build-time render
@@ -29,6 +30,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <a className="skip-link" href="#main">
         Bỏ qua tới nội dung
       </a>
+      <UtmCapture />
       <Header />
       <MobileNav />
       <main id="main">{children}</main>

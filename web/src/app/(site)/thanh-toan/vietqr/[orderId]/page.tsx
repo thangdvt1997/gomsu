@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { buildVietQrImageUrl, vietqrConfigured, bankAccountDisplay } from "@/lib/vietqr";
 import { formatVnd } from "@/lib/format";
+import { uploadPaymentProofAction } from "@/lib/actions/upload-payment-proof";
 
 export const dynamic = "force-dynamic";
 
@@ -74,6 +75,43 @@ export default async function VietQrPaymentPage({
                 ))}
               </tbody>
             </table>
+          </div>
+
+          <div
+            style={{
+              marginTop: 24,
+              background: "var(--paper)",
+              border: "1px solid var(--line)",
+              borderRadius: "var(--radius-m)",
+              padding: 22,
+            }}
+          >
+            <h3 style={{ marginTop: 0 }}>Đã chuyển khoản? Gửi ảnh chụp màn hình giúp xưởng</h3>
+            <p style={{ color: "var(--ink-soft)", fontSize: ".88rem" }}>
+              Việc này giúp xưởng đối chiếu và xác nhận đơn nhanh hơn (không bắt buộc).
+            </p>
+            {order.paymentProofUrl ? (
+              <>
+                <img
+                  src={order.paymentProofUrl}
+                  alt="Ảnh chuyển khoản đã gửi"
+                  style={{ maxWidth: 240, borderRadius: 8, marginBottom: 10 }}
+                />
+                <p style={{ color: "var(--sage-dark)", fontWeight: 600, fontSize: ".88rem" }}>
+                  Đã gửi ảnh — cảm ơn bạn!
+                </p>
+              </>
+            ) : (
+              <form
+                action={uploadPaymentProofAction.bind(null, order.id)}
+                style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}
+              >
+                <input type="file" name="file" accept="image/*" required />
+                <button className="btn btn-outline btn-sm" type="submit">
+                  Gửi ảnh chuyển khoản
+                </button>
+              </form>
+            )}
           </div>
         </>
       )}

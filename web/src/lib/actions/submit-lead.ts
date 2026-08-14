@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { sendNotificationEmail } from "@/lib/mailer";
 
 const leadSchema = z.object({
   name: z.string().trim().min(1, "Vui lòng nhập họ tên").max(200),
@@ -40,9 +41,10 @@ export async function submitLeadAction(
     note,
   ].filter(Boolean);
 
+  const kind = productId ? "QUOTE_REQUEST" : "CONTACT_MESSAGE";
   await prisma.lead.create({
     data: {
-      kind: productId ? "QUOTE_REQUEST" : "CONTACT_MESSAGE",
+      kind,
       name,
       phone,
       email: email || null,
@@ -50,6 +52,13 @@ export async function submitLeadAction(
       productId: productId || null,
     },
   });
+
+  sendNotificationEmail(kind === "QUOTE_REQUEST" ? "Yêu cầu báo giá mới" : "Liên hệ mới", [
+    `Họ tên: ${name} - ${phone}`,
+    email ? `Email: ${email}` : "",
+    messageParts.length ? `Nội dung: ${messageParts.join(" | ")}` : "",
+    `Xem trong CMS: ${process.env.NEXT_PUBLIC_SITE_URL ?? "https://gomceramic.com"}/admin/leads`,
+  ].filter(Boolean)).catch((err) => console.error("Failed to send lead notification email:", err));
 
   return { ok: true };
 }

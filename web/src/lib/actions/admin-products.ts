@@ -26,16 +26,23 @@ function numOrNull(v: FormDataEntryValue | null): number | null {
 }
 
 function readSizesFromForm(formData: FormData) {
-  const sizes: { label: string | null; heightCm: number | null; mouthCm: number | null; priceVnd: number | null }[] = [];
+  const sizes: {
+    label: string | null;
+    heightCm: number | null;
+    mouthCm: number | null;
+    priceVnd: number | null;
+    stockQty: number | null;
+  }[] = [];
   for (let i = 0; i < MAX_SIZE_ROWS; i++) {
     const label = String(formData.get(`size_label_${i}`) ?? "").trim() || null;
     const heightCm = numOrNull(formData.get(`size_height_${i}`));
     const mouthCm = numOrNull(formData.get(`size_mouth_${i}`));
     const priceRaw = String(formData.get(`size_price_${i}`) ?? "").trim();
     const priceVnd = priceRaw ? numOrNull(formData.get(`size_price_${i}`)) : null;
+    const stockQty = numOrNull(formData.get(`size_stock_${i}`));
     // Skip fully-empty rows.
-    if (!label && heightCm === null && mouthCm === null && !priceRaw) continue;
-    sizes.push({ label, heightCm, mouthCm, priceVnd });
+    if (!label && heightCm === null && mouthCm === null && !priceRaw && stockQty === null) continue;
+    sizes.push({ label, heightCm, mouthCm, priceVnd, stockQty });
   }
   return sizes;
 }

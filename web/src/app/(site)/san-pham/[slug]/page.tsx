@@ -4,10 +4,31 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { ProductCard } from "@/components/site/ProductCard";
 import { AddToCartControls } from "@/components/site/AddToCartControls";
-import { priceLabel, dimsLabel } from "@/lib/format";
+import { priceLabel, dimsLabel, stockBadge } from "@/lib/format";
 import { COMPANY } from "@/lib/site-config";
-import { resolveMetadata, breadcrumbJsonLd } from "@/lib/seo";
+import { resolveMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
+import { WishlistButton } from "@/components/site/WishlistButton";
+import { ReviewsSection } from "@/components/site/ReviewsSection";
+
+const PRODUCT_FAQS = [
+  {
+    q: "Lọ có nhận đơn lẻ (mua 1 chiếc) không?",
+    a: "Có. Giá niêm yết là giá bán sỉ số lượng lớn — nếu mua lẻ 1-2 chiếc, vui lòng nhắn Zalo hoặc gọi hotline để xưởng báo giá lẻ chính xác.",
+  },
+  {
+    q: "Chính sách đổi trả nếu hàng vỡ khi vận chuyển?",
+    a: "Xưởng đổi 1-đổi-1 miễn phí nếu sản phẩm bị lỗi hoặc vỡ do vận chuyển — vui lòng chụp ảnh tình trạng hàng ngay khi nhận và liên hệ trong vòng 48 giờ.",
+  },
+  {
+    q: "Có thể đặt màu men theo yêu cầu không?",
+    a: "Với đơn số lượng lớn, xưởng nhận đặt màu men riêng theo yêu cầu. Liên hệ trực tiếp để trao đổi mẫu và thời gian sản xuất.",
+  },
+  {
+    q: "Thời gian giao hàng bao lâu?",
+    a: "Hàng có sẵn tại xưởng thường giao trong 2-4 ngày tuỳ khu vực. Đơn đặt màu/số lượng lớn theo yêu cầu sẽ có thời gian sản xuất riêng, xưởng sẽ báo cụ thể khi xác nhận đơn.",
+  },
+];
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://gomceramic.com";
 
@@ -59,6 +80,16 @@ export default async function ProductDetailPage({
   const product = await getProduct(slug);
   if (!product) notFound();
 
+  const approvedReviews = await prisma.review.findMany({
+    where: { productId: product.id, status: "APPROVED" },
+    orderBy: { createdAt: "desc" },
+  });
+  const avgRating = approvedReviews.length
+    ? approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedReviews.length
+    : null;
+
+  const stock = stockBadge(product.sizes);
+
   const related = await prisma.product.findMany({
     where: { categoryId: product.categoryId, isDraft: false, NOT: { id: product.id } },
     select: {
@@ -67,7 +98,7 @@ export default async function ProductDetailPage({
       name: true,
       featured: true,
       category: { select: { slug: true, label: true } },
-      sizes: { select: { label: true, heightCm: true, mouthCm: true, priceVnd: true } },
+      sizes: { select: { label: true, heightCm: true, mouthCm: true, priceVnd: true, stockQty: true } },
       colors: { select: { glaze: { select: { key: true, label: true, hex: true } } }, orderBy: { sortOrder: "asc" } },
       images: { select: { url: true, thumbUrl: true }, orderBy: { sortOrder: "asc" }, take: 1 },
     },
@@ -88,10 +119,20 @@ export default async function ProductDetailPage({
       "@type": "Offer",
       priceCurrency: "VND",
       price: String(Math.min(...prices)),
-      availability: "https://schema.org/InStock",
+      availability:
+        stock?.type === "out" ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
       url: `${siteUrl}/san-pham/${product.slug}`,
     };
   }
+  if (avgRating !== null) {
+    jsonLd.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: avgRating.toFixed(1),
+      reviewCount: approvedReviews.length,
+    };
+  }
+
+  const faq = faqJsonLd(PRODUCT_FAQS.map((f) => ({ question: f.q, answer: f.a })));
 
   const breadcrumb = breadcrumbJsonLd([
     { name: "Trang chủ", url: siteUrl },
@@ -104,6 +145,7 @@ export default async function ProductDetailPage({
     <>
       <JsonLd data={jsonLd} />
       <JsonLd data={breadcrumb} />
+      <JsonLd data={faq} />
       <div className="container" style={{ paddingTop: "calc(var(--header-h) + 26px)" }}>
         <div className="breadcrumb" style={{ color: "var(--ink-faint)" }}>
           <Link href="/">Trang chủ</Link>
@@ -137,7 +179,18 @@ export default async function ProductDetailPage({
           <div className="pd-info">
             <div className="code-line">
               <span className="code">{product.code}</span>
-              <span className="stars">★★★★★</span>
+              {avgRating !== null ? (
+                <span className="stars">
+                  {"★".repeat(Math.round(avgRating))}
+                  {"☆".repeat(5 - Math.round(avgRating))}
+                  <span style={{ color: "var(--ink-faint)", fontSize: ".8rem", marginLeft: 6 }}>
+                    ({approvedReviews.length} đánh giá)
+                  </span>
+                </span>
+              ) : (
+                <span className="stars">★★★★★</span>
+              )}
+              <WishlistButton productSlug={product.slug} />
             </div>
             <h1>{product.name}</h1>
             {product.tag && <p className="sub">{product.tag}</p>}
@@ -147,6 +200,14 @@ export default async function ProductDetailPage({
             <p className="pd-price-note">
               Giá bán sỉ, đã bao gồm men màu tiêu chuẩn · Đơn lẻ vui lòng liên hệ
             </p>
+            {stock?.type === "out" && (
+              <p style={{ color: "#a83232", fontWeight: 700, marginBottom: 16 }}>Tạm hết hàng</p>
+            )}
+            {stock?.type === "low" && (
+              <p style={{ color: "var(--terracotta-dark)", fontWeight: 700, marginBottom: 16 }}>
+                Chỉ còn {stock.qty} sản phẩm tại xưởng
+              </p>
+            )}
 
             <AddToCartControls
               productId={product.id}
@@ -194,7 +255,7 @@ export default async function ProductDetailPage({
 
             <div className="trust-row">
               <div>✓ Hàng có sẵn tại xưởng</div>
-              <div>✓ Hỗ trợ đổi hàng vỡ vận chuyển</div>
+              <div>✓ Đổi 1-đổi-1 nếu lỗi/vỡ do vận chuyển</div>
               <div>✓ Xuất hoá đơn theo yêu cầu</div>
             </div>
           </div>
@@ -209,6 +270,9 @@ export default async function ProductDetailPage({
           </button>
           <button className="tab-btn" data-tab="baoquan">
             Bảo quản &amp; vệ sinh
+          </button>
+          <button className="tab-btn" data-tab="faq">
+            Câu hỏi thường gặp
           </button>
         </div>
         <div id="pd-panels">
@@ -255,7 +319,19 @@ export default async function ProductDetailPage({
               </p>
             </div>
           </div>
+          <div className="tab-panel" data-panel="faq">
+            <div style={{ display: "grid", gap: 18, maxWidth: 760 }}>
+              {PRODUCT_FAQS.map((f) => (
+                <div key={f.q}>
+                  <h4 style={{ marginBottom: 6 }}>{f.q}</h4>
+                  <p style={{ color: "var(--ink-soft)", margin: 0 }}>{f.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
+
+        <ReviewsSection productId={product.id} productSlug={product.slug} reviews={approvedReviews} />
 
         {related.length > 0 && (
           <>

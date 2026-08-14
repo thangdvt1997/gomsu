@@ -29,7 +29,7 @@ export default async function CatalogPage() {
         name: true,
         featured: true,
         category: { select: { slug: true, label: true } },
-        sizes: { select: { label: true, heightCm: true, mouthCm: true, priceVnd: true } },
+        sizes: { select: { label: true, heightCm: true, mouthCm: true, priceVnd: true, stockQty: true } },
         colors: {
           select: { glaze: { select: { key: true, label: true, hex: true } } },
           orderBy: { sortOrder: "asc" },

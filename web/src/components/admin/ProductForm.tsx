@@ -3,7 +3,7 @@ import { SeoEditorPanel } from "@/components/admin/SeoEditorPanel";
 
 type Category = { id: string; label: string };
 type Glaze = { id: string; key: string; label: string; hex: string };
-type ProductSize = { label: string | null; heightCm: unknown; mouthCm: unknown; priceVnd: number | null };
+type ProductSize = { label: string | null; heightCm: unknown; mouthCm: unknown; priceVnd: number | null; stockQty: number | null };
 
 type ProductFormProps = {
   action: (formData: FormData) => void;
@@ -75,7 +75,8 @@ export function ProductForm({ action, categories, glazes, product, submitLabel }
       <div className="admin-panel" style={{ marginBottom: 20 }}>
         <h3 style={{ marginTop: 0 }}>Kích thước &amp; giá</h3>
         <p style={{ color: "var(--a-ink-soft)", fontSize: ".85rem" }}>
-          Để trống Giá nếu sản phẩm size đó chỉ nhận &quot;Liên hệ&quot;. Để trống toàn bộ dòng nếu không dùng.
+          Để trống Giá nếu sản phẩm size đó chỉ nhận &quot;Liên hệ&quot;. Để trống Tồn kho nếu không muốn theo dõi
+          (luôn hiển thị còn hàng). Để trống toàn bộ dòng nếu không dùng.
         </p>
         {sizeRows.map((s, i) => (
           <div className="repeater-row" key={i}>
@@ -95,6 +96,10 @@ export function ProductForm({ action, categories, glazes, product, submitLabel }
               <label>Giá (VND)</label>
               <input type="text" name={`size_price_${i}`} defaultValue={s?.priceVnd != null ? String(s.priceVnd) : ""} />
             </div>
+            <div className="field">
+              <label>Tồn kho</label>
+              <input type="text" name={`size_stock_${i}`} defaultValue={s?.stockQty != null ? String(s.stockQty) : ""} placeholder="Không giới hạn" />
+            </div>
           </div>
         ))}
       </div>
@@ -112,7 +117,12 @@ export function ProductForm({ action, categories, glazes, product, submitLabel }
         </div>
       </div>
 
-      <SeoEditorPanel metaTitle={product?.metaTitle} metaDescription={product?.metaDescription} />
+      <SeoEditorPanel
+        metaTitle={product?.metaTitle}
+        metaDescription={product?.metaDescription}
+        titleFieldName="name"
+        contentFieldName="description"
+      />
 
       <button className="btn btn-primary" type="submit">
         {submitLabel}

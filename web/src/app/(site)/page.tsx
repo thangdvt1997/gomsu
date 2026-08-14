@@ -18,7 +18,7 @@ const productSelect = {
   name: true,
   featured: true,
   category: { select: { slug: true, label: true } },
-  sizes: { select: { label: true, heightCm: true, mouthCm: true, priceVnd: true } },
+  sizes: { select: { label: true, heightCm: true, mouthCm: true, priceVnd: true, stockQty: true } },
   colors: { select: { glaze: { select: { key: true, label: true, hex: true } } }, orderBy: { sortOrder: "asc" as const } },
   images: { select: { url: true, thumbUrl: true }, orderBy: { sortOrder: "asc" as const }, take: 1 },
 };

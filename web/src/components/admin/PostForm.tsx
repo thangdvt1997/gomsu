@@ -65,7 +65,12 @@ export function PostForm({ action, post, submitLabel }: PostFormProps) {
           </p>
         </div>
 
-        <SeoEditorPanel metaTitle={post?.metaTitle} metaDescription={post?.metaDescription} />
+        <SeoEditorPanel
+          metaTitle={post?.metaTitle}
+          metaDescription={post?.metaDescription}
+          titleFieldName="title"
+          contentFieldName="contentHtml"
+        />
       </div>
     </form>
   );
