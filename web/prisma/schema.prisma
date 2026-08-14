@@ -60,6 +60,7 @@ model Product {
   images     ProductImage[]
   orderItems OrderItem[]
   leads      Lead[]
+  reviews    Review[]
 
   @@index([categoryId])
 }
@@ -72,6 +73,7 @@ model ProductSize {
   heightCm  Decimal? @db.Decimal(5, 1)
   mouthCm   Decimal? @db.Decimal(5, 1)
   priceVnd  Int? // NULL = "Lien he" (no fixed price) — load-bearing for cart/checkout logic
+  stockQty  Int? // NULL = không theo dõi tồn kho (luôn còn hàng); số cụ thể = tồn kho thực
   sortOrder Int      @default(0)
 
   @@index([productId])
@@ -98,6 +100,29 @@ model ProductImage {
   sortOrder              Int     @default(0)
   isBorrowed             Boolean @default(false)
   borrowedFromProductId  String?
+
+  @@index([productId])
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// Real customer reviews only -- starts empty, never seeded with fabricated
+// content. Customers submit after purchase; admin moderates before a review
+// is APPROVED and counted in the product's public AggregateRating.
+model Review {
+  id           String       @id @default(cuid())
+  productId    String
+  product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customerName String
+  rating       Int
+  title        String?
+  comment      String       @db.Text
+  status       ReviewStatus @default(PENDING)
+  createdAt    DateTime     @default(now())
 
   @@index([productId])
 }
@@ -130,6 +155,26 @@ enum PaymentMethod {
   VNPAY
 }
 
+enum CouponType {
+  PERCENT
+  FIXED
+}
+
+model Coupon {
+  id          String     @id @default(cuid())
+  code        String     @unique
+  type        CouponType
+  value       Int // PERCENT: 1-100, FIXED: số tiền VNĐ
+  minOrderVnd Int?
+  maxUses     Int?
+  usedCount   Int        @default(0)
+  isActive    Boolean    @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime   @default(now())
+
+  orders Order[]
+}
+
 model Order {
   id               String        @id @default(cuid())
   orderNumber      String        @unique
@@ -140,8 +185,23 @@ model Order {
   customerEmail    String?
   shippingAddress  String
   note             String?
+  internalNote     String?       @db.Text // admin-only, never shown to the customer
   subtotalVnd      Int
+  discountVnd      Int           @default(0)
   totalVnd         Int
+  couponId         String?
+  coupon           Coupon?       @relation(fields: [couponId], references: [id])
+  paymentProofUrl  String? // screenshot khách tải lên khi chuyển khoản VietQR
+  expiresAt        DateTime? // PENDING quá hạn này sẽ tự bị huỷ (xem lib/actions/admin-orders.ts)
+  // UTM & ad click-id captured from the landing URL at checkout time, so
+  // revenue can be attributed back to a marketing channel/campaign.
+  utmSource        String?
+  utmMedium        String?
+  utmCampaign      String?
+  utmTerm          String?
+  utmContent       String?
+  gclid            String?
+  fbclid           String?
   // VNPay-specific reconciliation fields -- unused while paymentMethod is
   // VIETQR (manual bank-transfer confirmation instead), kept for when a
   // real VNPay merchant account exists and paymentMethod=VNPAY is used again.
@@ -155,6 +215,8 @@ model Order {
   updatedAt        DateTime      @updatedAt
 
   items OrderItem[]
+
+  @@index([couponId])
 }
 
 model OrderItem {
