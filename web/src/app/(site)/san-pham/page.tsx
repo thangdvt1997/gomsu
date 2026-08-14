@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { ProductCard } from "@/components/site/ProductCard";
@@ -99,9 +100,17 @@ export default async function CatalogPage() {
             <h4>Tông men</h4>
             <div className="filter-list">
               {glazes.map((g) => (
-                <label key={g.key}>
-                  <input type="checkbox" data-catalog-check="color" value={g.key} />{" "}
-                  <span className="sw" style={{ display: "inline-block", background: g.hex }} /> {g.label}
+                <label key={g.key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span>
+                    <input type="checkbox" data-catalog-check="color" value={g.key} />{" "}
+                    <span className="sw" style={{ display: "inline-block", background: g.hex }} /> {g.label}
+                  </span>
+                  <Link
+                    href={`/san-pham/mau-men/${g.key}`}
+                    style={{ fontSize: ".76rem", color: "var(--terracotta-dark)", textDecoration: "underline" }}
+                  >
+                    Xem tất cả
+                  </Link>
                 </label>
               ))}
             </div>

@@ -14,12 +14,14 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   { path: "/gioi-thieu", priority: 0.5, changeFrequency: "monthly" },
   { path: "/tin-tuc", priority: 0.6, changeFrequency: "weekly" },
   { path: "/lien-he", priority: 0.5, changeFrequency: "monthly" },
+  { path: "/qua-tang-doanh-nghiep", priority: 0.6, changeFrequency: "monthly" },
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [products, posts] = await Promise.all([
+  const [products, posts, glazes] = await Promise.all([
     prisma.product.findMany({ where: { isDraft: false }, select: { slug: true, updatedAt: true } }),
     prisma.post.findMany({ where: { publishedAt: { not: null } }, select: { slug: true, updatedAt: true } }),
+    prisma.glaze.findMany({ select: { key: true } }),
   ]);
 
   return [
@@ -40,6 +42,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: p.updatedAt,
       changeFrequency: "monthly" as const,
       priority: 0.5,
+    })),
+    ...glazes.map((g) => ({
+      url: `${siteUrl}/san-pham/mau-men/${g.key}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
     })),
   ];
 }

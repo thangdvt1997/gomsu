@@ -42,6 +42,13 @@ export async function updateOrderInternalNoteAction(id: string, formData: FormDa
   revalidatePath(`/admin/orders/${id}`);
 }
 
+export async function setOrderTagAction(id: string, formData: FormData) {
+  const tag = String(formData.get("tag") ?? "").trim() || null;
+  await prisma.order.update({ where: { id }, data: { tag } });
+  revalidatePath(`/admin/orders/${id}`);
+  revalidatePath("/admin/orders");
+}
+
 /**
  * Lazily cancels PENDING VietQR orders past their payment window and
  * restores their reserved stock -- called from the admin orders list on

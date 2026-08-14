@@ -202,6 +202,7 @@ model Order {
   utmContent       String?
   gclid            String?
   fbclid           String?
+  tag              String? // nhãn khách hàng tự do, vd "Khách sỉ", "VIP", "Khách quen"
   // VNPay-specific reconciliation fields -- unused while paymentMethod is
   // VIETQR (manual bank-transfer confirmation instead), kept for when a
   // real VNPay merchant account exists and paymentMethod=VNPAY is used again.
@@ -256,6 +257,7 @@ model Lead {
   productId String?
   product   Product?   @relation(fields: [productId], references: [id])
   status    LeadStatus @default(NEW)
+  tag       String? // nhãn tự do, vd "Khách sỉ", "VIP", "Khách quen"
   createdAt DateTime   @default(now())
 
   @@index([productId])

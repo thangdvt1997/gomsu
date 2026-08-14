@@ -53,6 +53,9 @@ export function Footer({ categories }: { categories: Category[] }) {
                 <Link href="/bao-gia">Bảng giá sỉ 2026</Link>
               </li>
               <li>
+                <Link href="/qua-tang-doanh-nghiep">Quà tặng doanh nghiệp</Link>
+              </li>
+              <li>
                 <Link href="/tin-tuc">Tin tức &amp; cẩm nang</Link>
               </li>
               <li>

@@ -14,6 +14,7 @@ export const NAV_LINKS = [
   { href: "/", label: "Trang chủ" },
   { href: "/san-pham", label: "Sản phẩm" },
   { href: "/bao-gia", label: "Bảng giá sỉ" },
+  { href: "/qua-tang-doanh-nghiep", label: "Quà tặng DN" },
   { href: "/gioi-thieu", label: "Giới thiệu" },
   { href: "/tin-tuc", label: "Tin tức" },
   { href: "/lien-he", label: "Liên hệ" },

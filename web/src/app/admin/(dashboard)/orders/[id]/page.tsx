@@ -2,7 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { formatVnd } from "@/lib/format";
-import { markOrderPaidAction, cancelOrderAction, updateOrderInternalNoteAction } from "@/lib/actions/admin-orders";
+import {
+  markOrderPaidAction,
+  cancelOrderAction,
+  updateOrderInternalNoteAction,
+  setOrderTagAction,
+} from "@/lib/actions/admin-orders";
+
+const TAG_SUGGESTIONS = ["Khách sỉ", "VIP", "Khách quen", "Doanh nghiệp"];
 
 export const dynamic = "force-dynamic";
 
@@ -136,6 +143,19 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                 </>
               )}
             </p>
+          </div>
+
+          <div className="admin-panel" style={{ marginBottom: 20 }}>
+            <h3 style={{ marginTop: 0 }}>Nhãn khách hàng</h3>
+            <form action={setOrderTagAction.bind(null, order.id)} style={{ display: "flex", gap: 8 }}>
+              <input type="text" name="tag" defaultValue={order.tag ?? ""} list="order-tag-suggestions" placeholder="VD: Khách sỉ" style={{ flex: 1 }} />
+              <button className="btn btn-outline" type="submit">Lưu</button>
+            </form>
+            <datalist id="order-tag-suggestions">
+              {TAG_SUGGESTIONS.map((t) => (
+                <option key={t} value={t} />
+              ))}
+            </datalist>
           </div>
 
           <div className="admin-panel">

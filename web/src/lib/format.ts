@@ -55,7 +55,7 @@ export function priceRowParts(s: { label: string | null } & SizeLike): { dims: s
   return { dims: `${prefix}${dims}`, price };
 }
 
-const LOW_STOCK_THRESHOLD = 5;
+export const LOW_STOCK_THRESHOLD = 5;
 
 type StockSizeLike = { priceVnd: number | null; stockQty: number | null };
 

@@ -65,6 +65,11 @@ export default async function AdminOrdersPage({
                 </td>
                 <td>
                   {o.customerName}
+                  {o.tag && (
+                    <span className="tag-pill is-checked" style={{ marginLeft: 6, fontSize: ".72rem", padding: "2px 8px" }}>
+                      {o.tag}
+                    </span>
+                  )}
                   <br />
                   <span style={{ color: "var(--a-ink-soft)", fontSize: ".8rem" }}>{o.customerPhone}</span>
                 </td>

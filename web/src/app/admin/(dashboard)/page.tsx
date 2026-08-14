@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { formatVnd } from "@/lib/format";
+import { formatVnd, LOW_STOCK_THRESHOLD } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +8,7 @@ const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 export default async function AdminDashboardPage() {
   const since = new Date(Date.now() - THIRTY_DAYS_MS);
 
-  const [productCount, orderCount, newLeadCount, postCount, pendingReviewCount, topItems, paidOrders] =
+  const [productCount, orderCount, newLeadCount, postCount, pendingReviewCount, topItems, paidOrders, lowStockSizes] =
     await Promise.all([
       prisma.product.count(),
       prisma.order.count(),
@@ -26,7 +26,14 @@ export default async function AdminDashboardPage() {
         where: { createdAt: { gte: since }, status: { not: "CANCELLED" } },
         select: { totalVnd: true, utmSource: true, utmMedium: true },
       }),
+      prisma.productSize.findMany({
+        where: { stockQty: { not: null, lte: LOW_STOCK_THRESHOLD } },
+        include: { product: { select: { id: true, name: true, isDraft: true } } },
+        orderBy: { stockQty: "asc" },
+      }),
     ]);
+
+  const activeLowStock = lowStockSizes.filter((s) => !s.product.isDraft);
 
   const revenueByChannel = new Map<string, number>();
   for (const o of paidOrders) {
@@ -68,6 +75,38 @@ export default async function AdminDashboardPage() {
             </a>
             .
           </p>
+        </div>
+      )}
+
+      {activeLowStock.length > 0 && (
+        <div className="admin-panel" style={{ marginBottom: 20, borderColor: "#a83232" }}>
+          <h3 style={{ marginTop: 0 }}>⚠ Sắp hết hàng / hết hàng ({activeLowStock.length})</h3>
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Sản phẩm</th>
+                <th>Size</th>
+                <th>Còn lại</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {activeLowStock.map((s) => (
+                <tr key={s.id}>
+                  <td>{s.product.name}</td>
+                  <td>{s.label ?? "—"}</td>
+                  <td style={{ color: s.stockQty === 0 ? "#a83232" : "#8a6100", fontWeight: 700 }}>
+                    {s.stockQty === 0 ? "Hết hàng" : s.stockQty}
+                  </td>
+                  <td>
+                    <a className="btn btn-sm btn-outline" href={`/admin/products/${s.product.id}`}>
+                      Cập nhật
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
