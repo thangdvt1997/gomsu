@@ -36,7 +36,11 @@ test.describe("authenticated admin", () => {
     await page.fill('input[name="name"]', testName);
     await page.fill('input[name="code"]', testCode);
     await page.fill('textarea[name="description"]', "Sản phẩm test tự động, sẽ bị xoá.");
-    await page.click('button[type="submit"]');
+    // The admin sidebar's "Đăng xuất" (sign out) button is also
+    // type="submit" and comes first in DOM order -- a bare
+    // button[type="submit"] selector matched that one instead of the
+    // form's own submit button, silently logging the test out.
+    await page.click('button:has-text("Tạo sản phẩm")');
     // Require a real cuid (25 lowercase alphanumeric chars), not just any
     // match of [a-z0-9]+ -- that pattern also matches the literal "new" in
     // /admin/products/new, which would let a silently-failed create (no
