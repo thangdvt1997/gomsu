@@ -2,7 +2,22 @@
 (function () {
   "use strict";
 
-  document.addEventListener("DOMContentLoaded", function () {
+  // Next.js loads this file via <Script strategy="afterInteractive">, which
+  // injects the tag AFTER hydration -- by then document.readyState is
+  // already "complete" and DOMContentLoaded already fired in the past.
+  // addEventListener("DOMContentLoaded", ...) at that point NEVER calls the
+  // handler (you can't catch an event after it already happened), so every
+  // feature below silently never ran. Run immediately if the document is
+  // already past the "loading" state; only wait for the event otherwise.
+  function ready(fn) {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fn);
+    } else {
+      fn();
+    }
+  }
+
+  ready(function () {
     initMobileNav();
     initHeroSlider();
     initTabs();
