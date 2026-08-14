@@ -151,7 +151,11 @@ export function AddToCartControls({
             <QuoteForm
               productId={productId}
               pending={pending}
-              onSubmit={(formData) => startTransition(() => submitLeadAction({ ok: false }, formData))}
+              onSubmit={(formData) =>
+                startTransition(() => {
+                  void submitLeadAction({ ok: false }, formData);
+                })
+              }
               onDone={() => setQuoteOpen(false)}
             />
           )}
