@@ -1,0 +1,45 @@
+import type { MetadataRoute } from "next";
+import { prisma } from "@/lib/db";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://gomceramic.com";
+
+// Same reasoning as the force-dynamic pages: no DATABASE_URL/network at
+// `docker build` time, and a static bake would go stale between deploys.
+export const dynamic = "force-dynamic";
+
+const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
+  { path: "/", priority: 1, changeFrequency: "daily" },
+  { path: "/san-pham", priority: 0.9, changeFrequency: "daily" },
+  { path: "/bao-gia", priority: 0.8, changeFrequency: "weekly" },
+  { path: "/gioi-thieu", priority: 0.5, changeFrequency: "monthly" },
+  { path: "/tin-tuc", priority: 0.6, changeFrequency: "weekly" },
+  { path: "/lien-he", priority: 0.5, changeFrequency: "monthly" },
+];
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [products, posts] = await Promise.all([
+    prisma.product.findMany({ where: { isDraft: false }, select: { slug: true, updatedAt: true } }),
+    prisma.post.findMany({ where: { publishedAt: { not: null } }, select: { slug: true, updatedAt: true } }),
+  ]);
+
+  return [
+    ...STATIC_ROUTES.map((r) => ({
+      url: `${siteUrl}${r.path}`,
+      lastModified: new Date(),
+      changeFrequency: r.changeFrequency,
+      priority: r.priority,
+    })),
+    ...products.map((p) => ({
+      url: `${siteUrl}/san-pham/${p.slug}`,
+      lastModified: p.updatedAt,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    })),
+    ...posts.map((p) => ({
+      url: `${siteUrl}/tin-tuc/${p.slug}`,
+      lastModified: p.updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    })),
+  ];
+}

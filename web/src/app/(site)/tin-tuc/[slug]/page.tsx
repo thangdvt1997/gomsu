@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { COMPANY } from "@/lib/site-config";
+import { resolveMetadata, breadcrumbJsonLd } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://gomceramic.com";
 
@@ -21,17 +23,14 @@ export async function generateMetadata({
   const { slug } = await params;
   const post = await prisma.post.findUnique({ where: { slug } });
   if (!post) return {};
-  return {
-    title: post.metaTitle ?? post.title,
-    description: post.metaDescription ?? post.excerpt ?? undefined,
-    alternates: { canonical: `${siteUrl}/tin-tuc/${post.slug}` },
-    openGraph: {
-      title: post.metaTitle ?? post.title,
-      description: post.metaDescription ?? post.excerpt ?? undefined,
-      url: `${siteUrl}/tin-tuc/${post.slug}`,
-      images: post.coverImage ? [post.coverImage] : undefined,
-    },
-  };
+  return resolveMetadata({
+    path: `/tin-tuc/${post.slug}`,
+    metaTitle: post.metaTitle,
+    metaDescription: post.metaDescription,
+    fallbackTitle: post.title,
+    fallbackDescription: post.excerpt ?? post.title,
+    image: post.coverImage,
+  });
 }
 
 export default async function BlogPostPage({
@@ -43,8 +42,15 @@ export default async function BlogPostPage({
   const post = await prisma.post.findUnique({ where: { slug } });
   if (!post) notFound();
 
+  const breadcrumb = breadcrumbJsonLd([
+    { name: "Trang chủ", url: siteUrl },
+    { name: "Tin tức", url: `${siteUrl}/tin-tuc` },
+    { name: post.title, url: `${siteUrl}/tin-tuc/${post.slug}` },
+  ]);
+
   return (
     <>
+      <JsonLd data={breadcrumb} />
       <div className="page-hero" style={{ padding: "130px 0 40px" }}>
         <img className="bg" src={post.coverImage?.replace(/\.jpg$/, "-thumb.jpg") ?? ""} alt="" />
         <div className="container">

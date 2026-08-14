@@ -6,6 +6,8 @@ import { ProductCard } from "@/components/site/ProductCard";
 import { AddToCartControls } from "@/components/site/AddToCartControls";
 import { priceLabel, dimsLabel } from "@/lib/format";
 import { COMPANY } from "@/lib/site-config";
+import { resolveMetadata, breadcrumbJsonLd } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://gomceramic.com";
 
@@ -37,21 +39,15 @@ export async function generateMetadata({
   if (!product) return {};
   const dims = dimsLabel(product.sizes);
   const price = priceLabel(product.sizes);
-  const description =
-    product.metaDescription ??
-    `${product.tag ?? ""} ${dims ? `${dims}, giá sỉ ${price}.` : ""} Hàng có sẵn tại xưởng gốm Bát Tràng, giao toàn quốc.`.trim();
-  const image = product.images[0]?.url;
-  return {
-    title: product.metaTitle ?? `${product.name} ${product.code} — Lọ Hoa Gốm Sứ Bát Tràng`,
-    description,
-    alternates: { canonical: `${siteUrl}/san-pham/${product.slug}` },
-    openGraph: {
-      title: product.metaTitle ?? `${product.name} ${product.code} — Lọ Hoa Gốm Sứ Bát Tràng`,
-      description,
-      url: `${siteUrl}/san-pham/${product.slug}`,
-      images: image ? [image] : undefined,
-    },
-  };
+  return resolveMetadata({
+    path: `/san-pham/${product.slug}`,
+    metaTitle: product.metaTitle,
+    metaDescription: product.metaDescription,
+    fallbackTitle: `${product.name} ${product.code} — Lọ Hoa Gốm Sứ Bát Tràng`,
+    fallbackDescription:
+      `${product.tag ?? ""} ${dims ? `${dims}, giá sỉ ${price}.` : ""} Hàng có sẵn tại xưởng gốm Bát Tràng, giao toàn quốc.`.trim(),
+    image: product.images[0]?.url,
+  });
 }
 
 export default async function ProductDetailPage({
@@ -97,9 +93,17 @@ export default async function ProductDetailPage({
     };
   }
 
+  const breadcrumb = breadcrumbJsonLd([
+    { name: "Trang chủ", url: siteUrl },
+    { name: "Sản phẩm", url: `${siteUrl}/san-pham` },
+    { name: product.category.label, url: `${siteUrl}/san-pham?cat=${product.category.slug}` },
+    { name: product.name, url: `${siteUrl}/san-pham/${product.slug}` },
+  ]);
+
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <JsonLd data={jsonLd} />
+      <JsonLd data={breadcrumb} />
       <div className="container" style={{ paddingTop: "calc(var(--header-h) + 26px)" }}>
         <div className="breadcrumb" style={{ color: "var(--ink-faint)" }}>
           <Link href="/">Trang chủ</Link>

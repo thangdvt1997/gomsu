@@ -1,3 +1,5 @@
+import { SeoEditorPanel } from "@/components/admin/SeoEditorPanel";
+
 type PostFormProps = {
   action: (formData: FormData) => void;
   post?: {
@@ -36,17 +38,7 @@ export function PostForm({ action, post, submitLabel }: PostFormProps) {
           <input type="checkbox" name="published" defaultChecked={!!post?.publishedAt} /> Xuất bản (hiển thị công khai)
         </label>
       </div>
-      <div className="admin-panel" style={{ marginBottom: 20 }}>
-        <h3 style={{ marginTop: 0 }}>SEO (tuỳ chọn)</h3>
-        <div className="field">
-          <label>Meta title</label>
-          <input type="text" name="metaTitle" defaultValue={post?.metaTitle ?? ""} />
-        </div>
-        <div className="field">
-          <label>Meta description</label>
-          <textarea name="metaDescription" defaultValue={post?.metaDescription ?? ""} rows={2} />
-        </div>
-      </div>
+      <SeoEditorPanel metaTitle={post?.metaTitle} metaDescription={post?.metaDescription} />
       <button className="btn btn-primary" type="submit">
         {submitLabel}
       </button>

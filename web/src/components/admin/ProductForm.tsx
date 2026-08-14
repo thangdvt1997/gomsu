@@ -1,4 +1,5 @@
 import { MAX_SIZE_ROWS } from "@/lib/constants";
+import { SeoEditorPanel } from "@/components/admin/SeoEditorPanel";
 
 type Category = { id: string; label: string };
 type Glaze = { id: string; key: string; label: string; hex: string };
@@ -111,17 +112,7 @@ export function ProductForm({ action, categories, glazes, product, submitLabel }
         </div>
       </div>
 
-      <div className="admin-panel" style={{ marginBottom: 20 }}>
-        <h3 style={{ marginTop: 0 }}>SEO (tuỳ chọn — để trống sẽ dùng mặc định)</h3>
-        <div className="field">
-          <label>Meta title</label>
-          <input type="text" name="metaTitle" defaultValue={product?.metaTitle ?? ""} />
-        </div>
-        <div className="field">
-          <label>Meta description</label>
-          <textarea name="metaDescription" defaultValue={product?.metaDescription ?? ""} rows={2} />
-        </div>
-      </div>
+      <SeoEditorPanel metaTitle={product?.metaTitle} metaDescription={product?.metaDescription} />
 
       <button className="btn btn-primary" type="submit">
         {submitLabel}
