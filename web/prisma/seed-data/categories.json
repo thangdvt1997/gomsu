@@ -1,0 +1,8 @@
+[
+  { "slug": "mini-de-ban", "label": "Mini & Để Bàn", "sortOrder": 0 },
+  { "slug": "co-dien-men-loang", "label": "Cổ Điển & Men Loang", "sortOrder": 1 },
+  { "slug": "dang-doc-la", "label": "Dáng Độc Lạ", "sortOrder": 2 },
+  { "slug": "vua-va-lon", "label": "Vừa & Lớn", "sortOrder": 3 },
+  { "slug": "bo-suu-tap", "label": "Bộ Sưu Tập Theo Bộ", "sortOrder": 4 },
+  { "slug": "cao-cap-trang-tri", "label": "Cao Cấp & Trang Trí", "sortOrder": 5 }
+]

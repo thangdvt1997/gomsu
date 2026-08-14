@@ -1,0 +1,15 @@
+[
+  { "key": "trang", "label": "Trắng mát", "hex": "#F5F1E6" },
+  { "key": "tieu", "label": "Men tiêu lấm tấm", "hex": "#CFC7B0" },
+  { "key": "hong", "label": "Hồng phấn", "hex": "#E7B8AC" },
+  { "key": "xanh-la", "label": "Xanh lá cây", "hex": "#7C9068" },
+  { "key": "xanh-co-vit", "label": "Xanh cổ vịt", "hex": "#2E6660" },
+  { "key": "soi-trang", "label": "Sôi trắng", "hex": "#EDE7D8" },
+  { "key": "soi-xanh", "label": "Sôi xanh rêu", "hex": "#66705A" },
+  { "key": "soi-nau", "label": "Sôi nâu", "hex": "#7C5A3C" },
+  { "key": "xi-mang", "label": "Xi măng", "hex": "#A6A099" },
+  { "key": "kho-hong", "label": "Khô hồng đất", "hex": "#C48A7C" },
+  { "key": "kho-xanh-la", "label": "Khô xanh lá", "hex": "#71805E" },
+  { "key": "kho-xanh-bien", "label": "Khô xanh biển", "hex": "#4C7488" },
+  { "key": "kho-den", "label": "Khô đen", "hex": "#2A2624" }
+]
