@@ -10,6 +10,7 @@ const leadSchema = z.object({
   categoryInterest: z.string().trim().max(200).optional().or(z.literal("")),
   expectedQty: z.string().trim().max(200).optional().or(z.literal("")),
   note: z.string().trim().max(4000).optional().or(z.literal("")),
+  productId: z.string().trim().max(100).optional().or(z.literal("")),
 });
 
 export type SubmitLeadState = { ok: boolean; error?: string };
@@ -25,13 +26,14 @@ export async function submitLeadAction(
     categoryInterest: formData.get("categoryInterest"),
     expectedQty: formData.get("expectedQty"),
     note: formData.get("note"),
+    productId: formData.get("productId"),
   });
 
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Thông tin không hợp lệ" };
   }
 
-  const { name, phone, email, categoryInterest, expectedQty, note } = parsed.data;
+  const { name, phone, email, categoryInterest, expectedQty, note, productId } = parsed.data;
   const messageParts = [
     categoryInterest && `Mẫu quan tâm: ${categoryInterest}`,
     expectedQty && `Số lượng dự kiến: ${expectedQty}`,
@@ -40,11 +42,12 @@ export async function submitLeadAction(
 
   await prisma.lead.create({
     data: {
-      kind: "CONTACT_MESSAGE",
+      kind: productId ? "QUOTE_REQUEST" : "CONTACT_MESSAGE",
       name,
       phone,
       email: email || null,
       message: messageParts.join("\n") || null,
+      productId: productId || null,
     },
   });
 

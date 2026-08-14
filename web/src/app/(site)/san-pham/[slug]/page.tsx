@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { ProductCard } from "@/components/site/ProductCard";
-import { formatVnd, priceLabel, sizeVariantLabel, sizeDimsText, dimsLabel } from "@/lib/format";
+import { AddToCartControls } from "@/components/site/AddToCartControls";
+import { priceLabel, dimsLabel } from "@/lib/format";
 import { COMPANY } from "@/lib/site-config";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://gomceramic.com";
@@ -143,50 +144,18 @@ export default async function ProductDetailPage({
               Giá bán sỉ, đã bao gồm men màu tiêu chuẩn · Đơn lẻ vui lòng liên hệ
             </p>
 
-            <div className="variant-group">
-              <h4>Kích thước</h4>
-              <div className="variant-options">
-                {product.sizes.map((s) => (
-                  <div
-                    key={s.id}
-                    className="variant-pill"
-                    data-dims={sizeDimsText(s) ?? ""}
-                    data-price={s.priceVnd !== null ? formatVnd(s.priceVnd) : "Liên hệ"}
-                  >
-                    {sizeVariantLabel(s, product.sizes.length === 1)}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="variant-group">
-              <h4>Tông men có sẵn</h4>
-              <div className="color-options">
-                {product.colors.map((c) => (
-                  <div key={c.glazeId} className="color-pill">
-                    <span className="color-dot" style={{ background: c.glaze.hex }} />
-                    {c.glaze.label}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="qty-row">
-              <div className="qty-stepper">
-                <button className="qty-minus" aria-label="Giảm số lượng">
-                  −
-                </button>
-                <input type="text" defaultValue={50} inputMode="numeric" aria-label="Số lượng đặt" />
-                <button className="qty-plus" aria-label="Tăng số lượng">
-                  +
-                </button>
-              </div>
-              <span style={{ fontSize: ".82rem", color: "var(--ink-faint)" }}>
-                Số lượng tối thiểu tham khảo cho đơn sỉ
-              </span>
-            </div>
+            <AddToCartControls
+              productId={product.id}
+              productSlug={product.slug}
+              productName={product.name}
+              productCode={product.code}
+              thumbUrl={product.images[0]?.thumbUrl ?? product.images[0]?.url ?? null}
+              sizes={product.sizes}
+              colors={product.colors.map((c) => c.glaze)}
+            />
 
             <div className="pd-cta">
-              <a className="btn btn-primary" href={`https://zalo.me/${COMPANY.zalo}`} target="_blank" rel="noopener">
+              <a className="btn btn-ghost" href={`https://zalo.me/${COMPANY.zalo}`} target="_blank" rel="noopener">
                 Đặt hàng qua Zalo
               </a>
               <a className="btn btn-outline" href={`tel:${COMPANY.phone1Tel}`}>
