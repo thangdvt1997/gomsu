@@ -23,7 +23,7 @@ export default async function BlogIndexPage() {
   return (
     <>
       <div className="page-hero">
-        <img className="bg" src="/uploads/site/lifestyle-3-thumb.jpg" alt="" />
+        <img className="bg" src="/media/site/lifestyle-3-thumb.jpg" alt="" />
         <div className="container">
           <div className="breadcrumb">
             <Link href="/">Trang chủ</Link>

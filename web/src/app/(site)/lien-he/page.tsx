@@ -12,7 +12,7 @@ export default function ContactPage() {
   return (
     <>
       <div className="page-hero">
-        <img className="bg" src="/uploads/site/lifestyle-2-thumb.jpg" alt="" />
+        <img className="bg" src="/media/site/lifestyle-2-thumb.jpg" alt="" />
         <div className="container">
           <div className="breadcrumb">
             <Link href="/">Trang chủ</Link>

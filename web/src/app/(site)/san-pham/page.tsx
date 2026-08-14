@@ -48,7 +48,7 @@ export default async function CatalogPage() {
   return (
     <>
       <div className="page-hero">
-        <img className="bg" src="/uploads/products/chum-2-tai-2-thumb.jpg" alt="" />
+        <img className="bg" src="/media/products/chum-2-tai-2-thumb.jpg" alt="" />
         <div className="container">
           <div className="breadcrumb">
             <a href="/">Trang chủ</a>

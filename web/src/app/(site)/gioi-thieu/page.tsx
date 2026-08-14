@@ -12,7 +12,7 @@ export default function AboutPage() {
   return (
     <>
       <div className="page-hero">
-        <img className="bg" src="/uploads/site/workshop-1-thumb.jpg" alt="" />
+        <img className="bg" src="/media/site/workshop-1-thumb.jpg" alt="" />
         <div className="container">
           <div className="breadcrumb">
             <Link href="/">Trang chủ</Link>
@@ -46,7 +46,7 @@ export default function AboutPage() {
           </div>
           <div>
             <img
-              src="/uploads/site/workshop-2.jpg"
+              src="/media/site/workshop-2.jpg"
               alt="Nghệ nhân làm gốm tại xưởng Gốm Sứ Trung Mừng"
               style={{ borderRadius: "var(--radius-l)", boxShadow: "var(--shadow-m)" }}
             />
@@ -94,7 +94,7 @@ export default function AboutPage() {
               <img
                 key={n}
                 className={n === 1 ? "tall" : ""}
-                src={`/uploads/site/workshop-${n}.jpg`}
+                src={`/media/site/workshop-${n}.jpg`}
                 alt={`Xưởng gốm Gốm Sứ Trung Mừng tại Bát Tràng ${n}`}
                 loading="lazy"
               />

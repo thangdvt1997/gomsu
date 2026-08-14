@@ -35,10 +35,10 @@ export default async function HomePage() {
   ]);
 
   const heroImages = [
-    "/uploads/products/chum-2-tai-1.jpg",
-    "/uploads/products/bau-tron-1.jpg",
-    "/uploads/products/lo-tulip-1.jpg",
-    "/uploads/products/lo-ho-lo-1.jpg",
+    "/media/products/chum-2-tai-1.jpg",
+    "/media/products/bau-tron-1.jpg",
+    "/media/products/lo-tulip-1.jpg",
+    "/media/products/lo-ho-lo-1.jpg",
   ];
 
   return (
@@ -166,7 +166,7 @@ export default async function HomePage() {
               <img
                 key={n}
                 className={n === 1 || n === 4 ? "tall" : ""}
-                src={`/uploads/site/lifestyle-${n}.jpg`}
+                src={`/media/site/lifestyle-${n}.jpg`}
                 alt={`Không gian trang trí gốm sứ Bát Tràng ${n}`}
                 loading="lazy"
               />

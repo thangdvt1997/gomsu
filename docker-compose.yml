@@ -59,10 +59,11 @@ services:
       - ./web/.env
     environment:
       - DATABASE_URL=postgresql://gomsu:${DB_PASSWORD:-changeme}@postgres:5432/gomsu
+      - MEDIA_DIR=/app/media-data
     ports:
       - "${APP_PORT:-3000}:3000"
     volumes:
-      - uploads_data:/app/public/uploads
+      - media_data:/app/media-data
     depends_on:
       postgres:
         condition: service_healthy
@@ -70,4 +71,4 @@ services:
 
 volumes:
   pgdata:
-  uploads_data:
+  media_data:

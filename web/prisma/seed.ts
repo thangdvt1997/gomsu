@@ -118,8 +118,8 @@ async function seedProducts() {
       const n = i + 1;
       return {
         productId,
-        url: `/uploads/products/${p.slug}-${n}.jpg`,
-        thumbUrl: `/uploads/products/${p.slug}-${n}-thumb.jpg`,
+        url: `/media/products/${p.slug}-${n}.jpg`,
+        thumbUrl: `/media/products/${p.slug}-${n}-thumb.jpg`,
         alt: p.name,
         sortOrder: i,
         isBorrowed: Boolean(p.borrowedFrom),
