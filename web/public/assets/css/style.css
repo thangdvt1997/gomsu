@@ -123,6 +123,11 @@ button{ font-family:inherit; }
 .main-nav a:hover, .main-nav a.active{ background:var(--clay-200); color:var(--terracotta-dark); }
 
 .header-actions{ display:flex; align-items:center; gap:10px; }
+.lang-switch{ display:flex; align-items:center; gap:5px; font-size:.8rem; font-weight:700; color:var(--ink-faint); margin-right:4px; }
+.lang-switch a{ padding:4px 6px; border-radius:6px; transition:.2s; }
+.lang-switch a:hover{ color:var(--terracotta-dark); }
+.lang-switch a.is-active{ color:var(--terracotta-dark); background:var(--clay-200); }
+@media (max-width:900px){ .lang-switch{ display:none; } }
 .header-phone{ display:flex; flex-direction:column; text-align:right; margin-right:6px; }
 .header-phone small{ color:var(--ink-faint); font-size:.7rem; }
 .header-phone b{ color:var(--terracotta-dark); font-size:.98rem; }

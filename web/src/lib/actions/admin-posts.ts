@@ -27,11 +27,40 @@ function readPostFields(formData: FormData) {
   const publishNow = formData.get("published") === "on";
   const metaTitle = String(formData.get("metaTitle") ?? "").trim() || null;
   const metaDescription = String(formData.get("metaDescription") ?? "").trim() || null;
-  return { title, excerpt, contentHtml, publishNow, metaTitle, metaDescription };
+  const titleEn = String(formData.get("titleEn") ?? "").trim() || null;
+  const excerptEn = String(formData.get("excerptEn") ?? "").trim() || null;
+  const contentHtmlEn = String(formData.get("contentHtmlEn") ?? "").trim() || null;
+  const metaTitleEn = String(formData.get("metaTitleEn") ?? "").trim() || null;
+  const metaDescriptionEn = String(formData.get("metaDescriptionEn") ?? "").trim() || null;
+  return {
+    title,
+    excerpt,
+    contentHtml,
+    publishNow,
+    metaTitle,
+    metaDescription,
+    titleEn,
+    excerptEn,
+    contentHtmlEn,
+    metaTitleEn,
+    metaDescriptionEn,
+  };
 }
 
 export async function createPostAction(formData: FormData) {
-  const { title, excerpt, contentHtml, publishNow, metaTitle, metaDescription } = readPostFields(formData);
+  const {
+    title,
+    excerpt,
+    contentHtml,
+    publishNow,
+    metaTitle,
+    metaDescription,
+    titleEn,
+    excerptEn,
+    contentHtmlEn,
+    metaTitleEn,
+    metaDescriptionEn,
+  } = readPostFields(formData);
   if (!title || !contentHtml) return;
 
   const post = await prisma.post.create({
@@ -43,6 +72,11 @@ export async function createPostAction(formData: FormData) {
       publishedAt: publishNow ? new Date() : null,
       metaTitle,
       metaDescription,
+      titleEn,
+      excerptEn,
+      contentHtmlEn,
+      metaTitleEn,
+      metaDescriptionEn,
     },
   });
   revalidatePath("/admin/posts");
@@ -51,7 +85,19 @@ export async function createPostAction(formData: FormData) {
 }
 
 export async function updatePostAction(id: string, formData: FormData) {
-  const { title, excerpt, contentHtml, publishNow, metaTitle, metaDescription } = readPostFields(formData);
+  const {
+    title,
+    excerpt,
+    contentHtml,
+    publishNow,
+    metaTitle,
+    metaDescription,
+    titleEn,
+    excerptEn,
+    contentHtmlEn,
+    metaTitleEn,
+    metaDescriptionEn,
+  } = readPostFields(formData);
   if (!title || !contentHtml) return;
 
   const existing = await prisma.post.findUnique({ where: { id } });
@@ -64,6 +110,11 @@ export async function updatePostAction(id: string, formData: FormData) {
       publishedAt: publishNow ? (existing?.publishedAt ?? new Date()) : null,
       metaTitle,
       metaDescription,
+      titleEn,
+      excerptEn,
+      contentHtmlEn,
+      metaTitleEn,
+      metaDescriptionEn,
     },
   });
   revalidatePath("/admin/posts");

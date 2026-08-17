@@ -52,6 +52,13 @@ model Product {
   metaTitle       String?
   metaDescription String?
   ogImage         String?
+  // Optional English translations -- when empty, the /en site falls back
+  // to the Vietnamese fields above rather than showing blank content.
+  nameEn            String?
+  tagEn             String?
+  descriptionEn     String?  @db.Text
+  metaTitleEn       String?
+  metaDescriptionEn String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -140,6 +147,12 @@ model Post {
   ogImage         String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  // Optional English translations -- same fallback-to-Vietnamese pattern as Product.
+  titleEn           String?
+  excerptEn         String?
+  contentHtmlEn     String?  @db.Text
+  metaTitleEn       String?
+  metaDescriptionEn String?
 }
 
 enum OrderStatus {

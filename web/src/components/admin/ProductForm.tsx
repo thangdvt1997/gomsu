@@ -19,6 +19,11 @@ type ProductFormProps = {
     isDraft: boolean;
     metaTitle: string | null;
     metaDescription: string | null;
+    nameEn?: string | null;
+    tagEn?: string | null;
+    descriptionEn?: string | null;
+    metaTitleEn?: string | null;
+    metaDescriptionEn?: string | null;
     sizes: ProductSize[];
     colors: { glaze: { key: string } }[];
   };
@@ -123,6 +128,33 @@ export function ProductForm({ action, categories, glazes, product, submitLabel }
         titleFieldName="name"
         contentFieldName="description"
       />
+
+      <div className="admin-panel" style={{ marginBottom: 20 }}>
+        <h3 style={{ marginTop: 0 }}>🇬🇧 English translation (optional)</h3>
+        <p style={{ color: "var(--a-ink-soft)", fontSize: ".85rem" }}>
+          Leave blank to fall back to the Vietnamese content above on the /en site. Translate at your own pace.
+        </p>
+        <div className="field">
+          <label>Product name (EN)</label>
+          <input type="text" name="nameEn" defaultValue={product?.nameEn ?? ""} />
+        </div>
+        <div className="field">
+          <label>Short tagline (EN)</label>
+          <input type="text" name="tagEn" defaultValue={product?.tagEn ?? ""} />
+        </div>
+        <div className="field" style={{ marginBottom: 16 }}>
+          <label>Detailed description (EN)</label>
+          <textarea name="descriptionEn" defaultValue={product?.descriptionEn ?? ""} rows={6} />
+        </div>
+        <div className="field">
+          <label>Meta title (EN)</label>
+          <input type="text" name="metaTitleEn" defaultValue={product?.metaTitleEn ?? ""} />
+        </div>
+        <div className="field" style={{ marginBottom: 0 }}>
+          <label>Meta description (EN)</label>
+          <textarea name="metaDescriptionEn" defaultValue={product?.metaDescriptionEn ?? ""} rows={2} />
+        </div>
+      </div>
 
       <button className="btn btn-primary" type="submit">
         {submitLabel}

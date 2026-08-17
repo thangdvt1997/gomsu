@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCartStore } from "@/lib/cart-store";
 import { formatVnd, sizeVariantLabel } from "@/lib/format";
 import { submitLeadAction } from "@/lib/actions/submit-lead";
+import { localeHref, type Locale } from "@/lib/i18n";
 
 type Size = {
   id: string;
@@ -24,6 +25,7 @@ export function AddToCartControls({
   thumbUrl,
   sizes,
   colors,
+  locale = "vi",
 }: {
   productId: string;
   productSlug: string;
@@ -32,7 +34,9 @@ export function AddToCartControls({
   thumbUrl: string | null;
   sizes: Size[];
   colors: Glaze[];
+  locale?: Locale;
 }) {
+  const isEn = locale === "en";
   const priced = sizes.filter((s) => s.priceVnd !== null);
   const firstInStock = priced.find((s) => s.stockQty !== 0);
   const [selectedSizeId, setSelectedSizeId] = useState<string | null>((firstInStock ?? priced[0])?.id ?? null);
@@ -72,7 +76,7 @@ export function AddToCartControls({
       {priced.length > 0 && (
         <>
           <div className="variant-group">
-            <h4>Kích thước</h4>
+            <h4>{isEn ? "Size" : "Kích thước"}</h4>
             <div className="variant-options">
               {sizes.map((s) => {
                 const isLienHe = s.priceVnd === null;
@@ -87,12 +91,12 @@ export function AddToCartControls({
                     onClick={() => !disabled && setSelectedSizeId(s.id)}
                     disabled={disabled}
                     style={disabled ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
-                    title={isLienHe ? "Liên hệ để biết giá" : outOfStock ? "Tạm hết hàng" : undefined}
+                    title={isLienHe ? (isEn ? "Contact us for pricing" : "Liên hệ để biết giá") : outOfStock ? (isEn ? "Sold out" : "Tạm hết hàng") : undefined}
                   >
-                    {sizeVariantLabel(s, sizes.length === 1)}
-                    {isLienHe && " (Liên hệ)"}
-                    {outOfStock && " (Hết hàng)"}
-                    {!outOfStock && lowStock && ` (Chỉ còn ${s.stockQty})`}
+                    {sizeVariantLabel(s, sizes.length === 1, locale)}
+                    {isLienHe && (isEn ? " (Contact us)" : " (Liên hệ)")}
+                    {outOfStock && (isEn ? " (Sold out)" : " (Hết hàng)")}
+                    {!outOfStock && lowStock && (isEn ? ` (Only ${s.stockQty} left)` : ` (Chỉ còn ${s.stockQty})`)}
                   </button>
                 );
               })}
@@ -100,7 +104,7 @@ export function AddToCartControls({
           </div>
           {colors.length > 0 && (
             <div className="variant-group">
-              <h4>Tông men có sẵn</h4>
+              <h4>{isEn ? "Available glaze colors" : "Tông men có sẵn"}</h4>
               <div className="color-options">
                 {colors.map((c) => (
                   <button
@@ -119,7 +123,7 @@ export function AddToCartControls({
 
           <div className="qty-row">
             <div className="qty-stepper">
-              <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Giảm số lượng">
+              <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label={isEn ? "Decrease quantity" : "Giảm số lượng"}>
                 −
               </button>
               <input
@@ -127,14 +131,14 @@ export function AddToCartControls({
                 value={qty}
                 inputMode="numeric"
                 onChange={(e) => setQty(Math.max(1, Math.min(maxQty, parseInt(e.target.value, 10) || 1)))}
-                aria-label="Số lượng đặt"
+                aria-label={isEn ? "Quantity" : "Số lượng đặt"}
               />
-              <button type="button" onClick={() => setQty((q) => Math.min(maxQty, q + 1))} aria-label="Tăng số lượng">
+              <button type="button" onClick={() => setQty((q) => Math.min(maxQty, q + 1))} aria-label={isEn ? "Increase quantity" : "Tăng số lượng"}>
                 +
               </button>
             </div>
             <span style={{ fontSize: ".82rem", color: "var(--ink-faint)" }}>
-              Số lượng tối thiểu tham khảo cho đơn sỉ
+              {isEn ? "Suggested minimum quantity for wholesale orders" : "Số lượng tối thiểu tham khảo cho đơn sỉ"}
             </span>
           </div>
 
@@ -146,13 +150,13 @@ export function AddToCartControls({
               disabled={!selectedSize || selectedSize.stockQty === 0}
             >
               {added
-                ? "Đã thêm vào giỏ ✓"
+                ? isEn ? "Added to cart ✓" : "Đã thêm vào giỏ ✓"
                 : selectedSize?.stockQty === 0
-                  ? "Tạm hết hàng"
-                  : `Thêm vào giỏ — ${selectedSize ? formatVnd(selectedSize.priceVnd!) : ""}`}
+                  ? isEn ? "Sold out" : "Tạm hết hàng"
+                  : `${isEn ? "Add to Cart" : "Thêm vào giỏ"} — ${selectedSize ? formatVnd(selectedSize.priceVnd!) : ""}`}
             </button>
-            <button className="btn btn-outline" type="button" onClick={() => router.push("/gio-hang")}>
-              Xem giỏ hàng
+            <button className="btn btn-outline" type="button" onClick={() => router.push(localeHref("/gio-hang", locale))}>
+              {isEn ? "View Cart" : "Xem giỏ hàng"}
             </button>
           </div>
         </>
@@ -162,12 +166,19 @@ export function AddToCartControls({
         <div style={{ marginTop: priced.length ? 20 : 0 }}>
           {!quoteOpen ? (
             <button className="btn btn-outline btn-block" type="button" onClick={() => setQuoteOpen(true)}>
-              {priced.length ? "Yêu cầu báo giá cho size Liên hệ" : "Yêu cầu báo giá sản phẩm này"}
+              {isEn
+                ? priced.length
+                  ? "Request a Quote for Contact-us Sizes"
+                  : "Request a Quote for This Product"
+                : priced.length
+                  ? "Yêu cầu báo giá cho size Liên hệ"
+                  : "Yêu cầu báo giá sản phẩm này"}
             </button>
           ) : (
             <QuoteForm
               productId={productId}
               pending={pending}
+              locale={locale}
               onSubmit={(formData) =>
                 startTransition(() => {
                   void submitLeadAction({ ok: false }, formData);
@@ -187,15 +198,22 @@ function QuoteForm({
   onSubmit,
   onDone,
   pending,
+  locale,
 }: {
   productId: string;
   onSubmit: (formData: FormData) => void;
   onDone: () => void;
   pending: boolean;
+  locale: Locale;
 }) {
+  const isEn = locale === "en";
   const [sent, setSent] = useState(false);
   if (sent) {
-    return <p style={{ color: "var(--sage-dark)", fontWeight: 600 }}>Đã gửi yêu cầu — xưởng sẽ liên hệ sớm nhất!</p>;
+    return (
+      <p style={{ color: "var(--sage-dark)", fontWeight: 600 }}>
+        {isEn ? "Request sent — we'll be in touch shortly!" : "Đã gửi yêu cầu — xưởng sẽ liên hệ sớm nhất!"}
+      </p>
+    );
   }
   return (
     <form
@@ -207,11 +225,11 @@ function QuoteForm({
       }}
       style={{ display: "grid", gap: 10, marginTop: 10 }}
     >
-      <input type="text" name="name" required placeholder="Họ và tên" />
-      <input type="tel" name="phone" required placeholder="Số điện thoại" />
-      <textarea name="note" placeholder="Ghi chú (size, số lượng...)" rows={2} />
+      <input type="text" name="name" required placeholder={isEn ? "Full name" : "Họ và tên"} />
+      <input type="tel" name="phone" required placeholder={isEn ? "Phone number" : "Số điện thoại"} />
+      <textarea name="note" placeholder={isEn ? "Note (size, quantity...)" : "Ghi chú (size, số lượng...)"} rows={2} />
       <button className="btn btn-primary" type="submit" disabled={pending}>
-        {pending ? "Đang gửi..." : "Gửi yêu cầu"}
+        {pending ? (isEn ? "Sending..." : "Đang gửi...") : isEn ? "Send Request" : "Gửi yêu cầu"}
       </button>
     </form>
   );

@@ -62,6 +62,11 @@ export async function createProductAction(formData: FormData) {
   const isDraft = formData.get("isDraft") === "on";
   const metaTitle = String(formData.get("metaTitle") ?? "").trim() || null;
   const metaDescription = String(formData.get("metaDescription") ?? "").trim() || null;
+  const nameEn = String(formData.get("nameEn") ?? "").trim() || null;
+  const tagEn = String(formData.get("tagEn") ?? "").trim() || null;
+  const descriptionEn = String(formData.get("descriptionEn") ?? "").trim() || null;
+  const metaTitleEn = String(formData.get("metaTitleEn") ?? "").trim() || null;
+  const metaDescriptionEn = String(formData.get("metaDescriptionEn") ?? "").trim() || null;
 
   if (!name || !code || !categoryId) return;
   const slug = slugify(name);
@@ -81,6 +86,11 @@ export async function createProductAction(formData: FormData) {
       isDraft,
       metaTitle,
       metaDescription,
+      nameEn,
+      tagEn,
+      descriptionEn,
+      metaTitleEn,
+      metaDescriptionEn,
       sizes: { create: readSizesFromForm(formData) },
       colors: { create: glazes.map((g, i) => ({ glazeId: g.id, sortOrder: i })) },
     },
@@ -101,6 +111,11 @@ export async function updateProductAction(id: string, formData: FormData) {
   const isDraft = formData.get("isDraft") === "on";
   const metaTitle = String(formData.get("metaTitle") ?? "").trim() || null;
   const metaDescription = String(formData.get("metaDescription") ?? "").trim() || null;
+  const nameEn = String(formData.get("nameEn") ?? "").trim() || null;
+  const tagEn = String(formData.get("tagEn") ?? "").trim() || null;
+  const descriptionEn = String(formData.get("descriptionEn") ?? "").trim() || null;
+  const metaTitleEn = String(formData.get("metaTitleEn") ?? "").trim() || null;
+  const metaDescriptionEn = String(formData.get("metaDescriptionEn") ?? "").trim() || null;
 
   if (!name || !code || !categoryId) return;
 
@@ -110,7 +125,22 @@ export async function updateProductAction(id: string, formData: FormData) {
   await prisma.$transaction([
     prisma.product.update({
       where: { id },
-      data: { name, code, categoryId, tag, description, featured, isDraft, metaTitle, metaDescription },
+      data: {
+        name,
+        code,
+        categoryId,
+        tag,
+        description,
+        featured,
+        isDraft,
+        metaTitle,
+        metaDescription,
+        nameEn,
+        tagEn,
+        descriptionEn,
+        metaTitleEn,
+        metaDescriptionEn,
+      },
     }),
     prisma.productSize.deleteMany({ where: { productId: id } }),
     prisma.productColor.deleteMany({ where: { productId: id } }),

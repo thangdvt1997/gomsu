@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { ProductCard } from "@/components/site/ProductCard";
 import { resolveMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
+import { glazeLabel } from "@/lib/i18n";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://gomceramic.com";
 
@@ -18,6 +19,7 @@ async function getGlazeWithProducts(glazeKey: string) {
       slug: true,
       code: true,
       name: true,
+      nameEn: true,
       featured: true,
       category: { select: { slug: true, label: true } },
       sizes: { select: { label: true, heightCm: true, mouthCm: true, priceVnd: true, stockQty: true } },
@@ -30,10 +32,6 @@ async function getGlazeWithProducts(glazeKey: string) {
   return { glaze, products };
 }
 
-// Dedicated landing page per glaze color -- faceted-attribute SEO pattern
-// (matches how CB2/West Elm build /color/white-vases style pages) to catch
-// long-tail searches like "lọ hoa men xanh cổ vịt" that the JS-filtered
-// catalog page alone can't rank for (no distinct crawlable URL per filter).
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
@@ -45,17 +43,18 @@ export async function generateMetadata({
   const data = await getGlazeWithProducts(glazeKey);
   if (!data) return {};
   const { glaze, products } = data;
+  const label = glazeLabel(glaze.key, glaze.label, "en");
   return resolveMetadata({
-    path: `/san-pham/mau-men/${glaze.key}`,
-    metaTitle: `Lọ Hoa Gốm Sứ Men ${glaze.label} — ${products.length} Mẫu Bát Tràng`,
-    metaDescription: `Bộ sưu tập ${products.length} mẫu lọ hoa gốm sứ Bát Tràng tông men ${glaze.label.toLowerCase()} — đa dạng kích thước, giá bán sỉ, giao hàng toàn quốc.`,
-    fallbackTitle: `Lọ hoa men ${glaze.label}`,
-    fallbackDescription: `Lọ hoa gốm sứ Bát Tràng tông men ${glaze.label}.`,
-    altLocalePath: `/en/san-pham/mau-men/${glaze.key}`,
+    path: `/en/san-pham/mau-men/${glaze.key}`,
+    metaTitle: `${label} Ceramic Vases — ${products.length} Bat Trang Designs`,
+    metaDescription: `A collection of ${products.length} Bat Trang ceramic vase designs finished in ${label.toLowerCase()} glaze — a range of sizes, wholesale pricing, nationwide shipping.`,
+    fallbackTitle: `${label} Glaze Vases`,
+    fallbackDescription: `Bat Trang ceramic vases in ${label} glaze.`,
+    altLocalePath: `/san-pham/mau-men/${glaze.key}`,
   });
 }
 
-export default async function GlazeLandingPage({
+export default async function EnglishGlazeLandingPage({
   params,
 }: {
   params: Promise<{ glazeKey: string }>;
@@ -64,11 +63,12 @@ export default async function GlazeLandingPage({
   const data = await getGlazeWithProducts(glazeKey);
   if (!data) notFound();
   const { glaze, products } = data;
+  const label = glazeLabel(glaze.key, glaze.label, "en");
 
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Trang chủ", url: siteUrl },
-    { name: "Sản phẩm", url: `${siteUrl}/san-pham` },
-    { name: `Men ${glaze.label}`, url: `${siteUrl}/san-pham/mau-men/${glaze.key}` },
+    { name: "Home", url: `${siteUrl}/en` },
+    { name: "Products", url: `${siteUrl}/en/san-pham` },
+    { name: `${label} Glaze`, url: `${siteUrl}/en/san-pham/mau-men/${glaze.key}` },
   ]);
 
   return (
@@ -78,30 +78,30 @@ export default async function GlazeLandingPage({
         <img className="bg" src="/media/products/chum-2-tai-2.jpg" alt="" />
         <div className="container">
           <div className="breadcrumb">
-            <Link href="/">Trang chủ</Link>
+            <Link href="/en">Home</Link>
             <span>/</span>
-            <Link href="/san-pham">Sản phẩm</Link>
+            <Link href="/en/san-pham">Products</Link>
             <span>/</span>
-            <span>Men {glaze.label}</span>
+            <span>{label} Glaze</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <span className="sw" style={{ width: 24, height: 24, background: glaze.hex }} />
-            <h1>Lọ Hoa Gốm Sứ Tông Men {glaze.label}</h1>
+            <h1>{label} Glaze Ceramic Vases</h1>
           </div>
           <p style={{ maxWidth: "60ch", color: "rgba(255,255,255,.82)" }}>
-            {products.length} mẫu lọ hoa gốm sứ Bát Tràng hoàn thiện với tông men {glaze.label.toLowerCase()} —
-            đa dạng kích thước, giá bán sỉ.
+            {products.length} Bat Trang ceramic vase designs finished in {label.toLowerCase()} glaze
+            — a range of sizes, wholesale pricing.
           </p>
         </div>
       </div>
       <section className="section-tight">
         <div className="container">
           {products.length === 0 ? (
-            <div className="empty-state">Chưa có sản phẩm nào với tông men này.</div>
+            <div className="empty-state">No products available in this glaze yet.</div>
           ) : (
             <div className="product-grid">
               {products.map((p, i) => (
-                <ProductCard key={p.slug} product={p} order={i} />
+                <ProductCard key={p.slug} product={p} order={i} locale="en" />
               ))}
             </div>
           )}

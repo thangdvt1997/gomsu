@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { submitLeadAction, type SubmitLeadState } from "@/lib/actions/submit-lead";
 import { COMPANY } from "@/lib/site-config";
+import type { Locale } from "@/lib/i18n";
 
 const CATEGORY_OPTIONS = [
   "Chưa xác định — tư vấn giúp tôi",
@@ -14,27 +15,57 @@ const CATEGORY_OPTIONS = [
   "Cao cấp & trang trí",
 ];
 
+const CATEGORY_OPTIONS_EN = [
+  "Not sure yet — please advise",
+  "Mini & tabletop",
+  "Classic & drip glaze",
+  "Unique shapes",
+  "Medium & large",
+  "Curated sets",
+  "Premium décor",
+];
+
 const initialState: SubmitLeadState = { ok: false };
 
-export function ContactForm() {
+export function ContactForm({ locale = "vi" }: { locale?: Locale }) {
+  const isEn = locale === "en";
+  const options = isEn ? CATEGORY_OPTIONS_EN : CATEGORY_OPTIONS;
   const [state, formAction, pending] = useActionState(submitLeadAction, initialState);
 
   if (state.ok) {
     return (
       <div className="field full" role="status">
-        <h3 style={{ marginBottom: 8 }}>Đã gửi yêu cầu thành công!</h3>
+        <h3 style={{ marginBottom: 8 }}>{isEn ? "Request sent successfully!" : "Đã gửi yêu cầu thành công!"}</h3>
         <p style={{ color: "var(--ink-soft)" }}>
-          Xưởng sẽ liên hệ lại qua số điện thoại bạn để lại trong vòng 30 phút làm việc. Để được
-          phản hồi nhanh nhất, bạn cũng có thể nhắn trực tiếp qua{" "}
-          <a
-            href={`https://zalo.me/${COMPANY.zalo}`}
-            target="_blank"
-            rel="noopener"
-            style={{ color: "var(--terracotta-dark)", fontWeight: 700 }}
-          >
-            Zalo {COMPANY.zalo}
-          </a>
-          .
+          {isEn ? (
+            <>
+              We&apos;ll contact you at the phone number provided within 30 business minutes. For the
+              fastest response, you can also message us directly on{" "}
+              <a
+                href={`https://zalo.me/${COMPANY.zalo}`}
+                target="_blank"
+                rel="noopener"
+                style={{ color: "var(--terracotta-dark)", fontWeight: 700 }}
+              >
+                Zalo {COMPANY.zalo}
+              </a>
+              .
+            </>
+          ) : (
+            <>
+              Xưởng sẽ liên hệ lại qua số điện thoại bạn để lại trong vòng 30 phút làm việc. Để được
+              phản hồi nhanh nhất, bạn cũng có thể nhắn trực tiếp qua{" "}
+              <a
+                href={`https://zalo.me/${COMPANY.zalo}`}
+                target="_blank"
+                rel="noopener"
+                style={{ color: "var(--terracotta-dark)", fontWeight: 700 }}
+              >
+                Zalo {COMPANY.zalo}
+              </a>
+              .
+            </>
+          )}
         </p>
       </div>
     );
@@ -43,32 +74,32 @@ export function ContactForm() {
   return (
     <form className="form-grid" action={formAction}>
       <div className="field">
-        <label>Họ và tên *</label>
-        <input type="text" name="name" required placeholder="Nguyễn Văn A" />
+        <label>{isEn ? "Full name *" : "Họ và tên *"}</label>
+        <input type="text" name="name" required placeholder={isEn ? "Jane Smith" : "Nguyễn Văn A"} />
       </div>
       <div className="field">
-        <label>Số điện thoại *</label>
-        <input type="tel" name="phone" required placeholder="09xxxxxxxx" />
+        <label>{isEn ? "Phone number *" : "Số điện thoại *"}</label>
+        <input type="tel" name="phone" required placeholder={isEn ? "+84 9xxxxxxxx" : "09xxxxxxxx"} />
       </div>
       <div className="field full">
         <label>Email</label>
-        <input type="email" name="email" placeholder="ban@congty.vn" />
+        <input type="email" name="email" placeholder={isEn ? "you@company.com" : "ban@congty.vn"} />
       </div>
       <div className="field full">
-        <label>Bạn quan tâm mẫu nào?</label>
-        <select name="categoryInterest" defaultValue={CATEGORY_OPTIONS[0]}>
-          {CATEGORY_OPTIONS.map((o) => (
+        <label>{isEn ? "Which design are you interested in?" : "Bạn quan tâm mẫu nào?"}</label>
+        <select name="categoryInterest" defaultValue={options[0]}>
+          {options.map((o) => (
             <option key={o}>{o}</option>
           ))}
         </select>
       </div>
       <div className="field full">
-        <label>Số lượng dự kiến</label>
-        <input type="text" name="expectedQty" placeholder="VD: 200 chiếc / tháng" />
+        <label>{isEn ? "Expected quantity" : "Số lượng dự kiến"}</label>
+        <input type="text" name="expectedQty" placeholder={isEn ? "E.g. 200 units / month" : "VD: 200 chiếc / tháng"} />
       </div>
       <div className="field full">
-        <label>Ghi chú</label>
-        <textarea name="note" placeholder="Mẫu mã, màu men, thời gian cần giao..." />
+        <label>{isEn ? "Note" : "Ghi chú"}</label>
+        <textarea name="note" placeholder={isEn ? "Designs, glaze colors, delivery timing..." : "Mẫu mã, màu men, thời gian cần giao..."} />
       </div>
       {state.error && (
         <div className="field full">
@@ -77,19 +108,36 @@ export function ContactForm() {
       )}
       <div className="field full">
         <button className="btn btn-primary btn-block" type="submit" disabled={pending}>
-          {pending ? "Đang gửi..." : "Gửi yêu cầu báo giá"}
+          {pending ? (isEn ? "Sending..." : "Đang gửi...") : isEn ? "Send Quote Request" : "Gửi yêu cầu báo giá"}
         </button>
         <p style={{ fontSize: ".78rem", color: "var(--ink-faint)", marginTop: 10 }}>
-          Để được phản hồi nhanh nhất, vui lòng nhắn trực tiếp qua{" "}
-          <a
-            href={`https://zalo.me/${COMPANY.zalo}`}
-            target="_blank"
-            rel="noopener"
-            style={{ color: "var(--terracotta-dark)", fontWeight: 700 }}
-          >
-            Zalo {COMPANY.zalo}
-          </a>
-          .
+          {isEn ? (
+            <>
+              For the fastest response, please message us directly on{" "}
+              <a
+                href={`https://zalo.me/${COMPANY.zalo}`}
+                target="_blank"
+                rel="noopener"
+                style={{ color: "var(--terracotta-dark)", fontWeight: 700 }}
+              >
+                Zalo {COMPANY.zalo}
+              </a>
+              .
+            </>
+          ) : (
+            <>
+              Để được phản hồi nhanh nhất, vui lòng nhắn trực tiếp qua{" "}
+              <a
+                href={`https://zalo.me/${COMPANY.zalo}`}
+                target="_blank"
+                rel="noopener"
+                style={{ color: "var(--terracotta-dark)", fontWeight: 700 }}
+              >
+                Zalo {COMPANY.zalo}
+              </a>
+              .
+            </>
+          )}
         </p>
       </div>
     </form>

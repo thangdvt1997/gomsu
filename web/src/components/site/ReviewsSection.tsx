@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { submitReviewAction, type SubmitReviewState } from "@/lib/actions/submit-review";
+import type { Locale } from "@/lib/i18n";
 
 type ReviewData = {
   id: string;
@@ -12,8 +13,8 @@ type ReviewData = {
   createdAt: Date;
 };
 
-function formatDate(d: Date) {
-  return new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }).format(d);
+function formatDate(d: Date, locale: Locale) {
+  return new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }).format(d);
 }
 
 const initialState: SubmitReviewState = { ok: false };
@@ -22,11 +23,14 @@ export function ReviewsSection({
   productId,
   productSlug,
   reviews,
+  locale = "vi",
 }: {
   productId: string;
   productSlug: string;
   reviews: ReviewData[];
+  locale?: Locale;
 }) {
+  const isEn = locale === "en";
   const [state, formAction, pending] = useActionState(submitReviewAction, initialState);
   const [rating, setRating] = useState(5);
   const [showForm, setShowForm] = useState(false);
@@ -35,18 +39,20 @@ export function ReviewsSection({
     <div style={{ marginTop: 60 }}>
       <div className="section-head" data-reveal style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
         <div>
-          <span className="eyebrow">Khách hàng nói gì</span>
-          <h2>Đánh Giá Sản Phẩm ({reviews.length})</h2>
+          <span className="eyebrow">{isEn ? "What customers say" : "Khách hàng nói gì"}</span>
+          <h2>{isEn ? `Product Reviews (${reviews.length})` : `Đánh Giá Sản Phẩm (${reviews.length})`}</h2>
         </div>
         {!showForm && !state.ok && (
           <button className="btn btn-outline btn-sm" type="button" onClick={() => setShowForm(true)}>
-            Viết đánh giá
+            {isEn ? "Write a Review" : "Viết đánh giá"}
           </button>
         )}
       </div>
 
       {reviews.length === 0 && (
-        <p style={{ color: "var(--ink-faint)" }}>Chưa có đánh giá nào — hãy là người đầu tiên chia sẻ trải nghiệm!</p>
+        <p style={{ color: "var(--ink-faint)" }}>
+          {isEn ? "No reviews yet — be the first to share your experience!" : "Chưa có đánh giá nào — hãy là người đầu tiên chia sẻ trải nghiệm!"}
+        </p>
       )}
 
       <div style={{ display: "grid", gap: 18, marginBottom: showForm ? 30 : 0 }}>
@@ -59,7 +65,7 @@ export function ReviewsSection({
             {r.title && <h4 style={{ margin: "6px 0 2px" }}>{r.title}</h4>}
             <p style={{ color: "var(--ink-soft)", margin: "4px 0" }}>{r.comment}</p>
             <span style={{ fontSize: ".78rem", color: "var(--ink-faint)" }}>
-              {r.customerName} · {formatDate(r.createdAt)}
+              {r.customerName} · {formatDate(r.createdAt, locale)}
             </span>
           </div>
         ))}
@@ -67,7 +73,9 @@ export function ReviewsSection({
 
       {state.ok ? (
         <p style={{ color: "var(--sage-dark)", fontWeight: 600 }}>
-          Cảm ơn bạn đã đánh giá! Đánh giá sẽ hiển thị công khai sau khi xưởng duyệt.
+          {isEn
+            ? "Thanks for your review! It will appear publicly once approved by the workshop."
+            : "Cảm ơn bạn đã đánh giá! Đánh giá sẽ hiển thị công khai sau khi xưởng duyệt."}
         </p>
       ) : (
         showForm && (
@@ -76,14 +84,14 @@ export function ReviewsSection({
             <input type="hidden" name="productSlug" value={productSlug} />
             <input type="hidden" name="rating" value={rating} />
             <div className="field full">
-              <label>Đánh giá của bạn</label>
+              <label>{isEn ? "Your rating" : "Đánh giá của bạn"}</label>
               <div style={{ display: "flex", gap: 6 }}>
                 {[1, 2, 3, 4, 5].map((n) => (
                   <button
                     key={n}
                     type="button"
                     onClick={() => setRating(n)}
-                    aria-label={`${n} sao`}
+                    aria-label={isEn ? `${n} stars` : `${n} sao`}
                     style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1.4rem", color: "var(--gold)", padding: 0 }}
                   >
                     {n <= rating ? "★" : "☆"}
@@ -92,16 +100,16 @@ export function ReviewsSection({
               </div>
             </div>
             <div className="field full">
-              <label>Họ và tên *</label>
-              <input type="text" name="customerName" required placeholder="Nguyễn Văn A" />
+              <label>{isEn ? "Full name *" : "Họ và tên *"}</label>
+              <input type="text" name="customerName" required placeholder={isEn ? "Jane Smith" : "Nguyễn Văn A"} />
             </div>
             <div className="field full">
-              <label>Tiêu đề (không bắt buộc)</label>
-              <input type="text" name="title" placeholder="VD: Rất ưng ý!" />
+              <label>{isEn ? "Title (optional)" : "Tiêu đề (không bắt buộc)"}</label>
+              <input type="text" name="title" placeholder={isEn ? "E.g. Very happy with it!" : "VD: Rất ưng ý!"} />
             </div>
             <div className="field full">
-              <label>Nội dung đánh giá *</label>
-              <textarea name="comment" required rows={4} placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..." />
+              <label>{isEn ? "Your review *" : "Nội dung đánh giá *"}</label>
+              <textarea name="comment" required rows={4} placeholder={isEn ? "Share your experience with this product..." : "Chia sẻ trải nghiệm của bạn về sản phẩm..."} />
             </div>
             {state.error && (
               <div className="field full">
@@ -110,7 +118,7 @@ export function ReviewsSection({
             )}
             <div className="field full">
               <button className="btn btn-primary" type="submit" disabled={pending}>
-                {pending ? "Đang gửi..." : "Gửi đánh giá"}
+                {pending ? (isEn ? "Submitting..." : "Đang gửi...") : isEn ? "Submit Review" : "Gửi đánh giá"}
               </button>
             </div>
           </form>

@@ -17,6 +17,15 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   { path: "/qua-tang-doanh-nghiep", priority: 0.6, changeFrequency: "monthly" },
 ];
 
+// Vietnamese is the canonical/default locale (unprefixed URLs, matches all
+// existing indexed links); English lives under /en and is linked back via
+// hreflang alternates rather than being sitemapped as fully separate pages.
+function withEnglishAlternate(path: string) {
+  const viUrl = `${siteUrl}${path}`;
+  const enUrl = path === "/" ? `${siteUrl}/en` : `${siteUrl}/en${path}`;
+  return { languages: { vi: viUrl, en: enUrl } };
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [products, posts, glazes] = await Promise.all([
     prisma.product.findMany({ where: { isDraft: false }, select: { slug: true, updatedAt: true } }),
@@ -30,24 +39,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: r.changeFrequency,
       priority: r.priority,
+      alternates: withEnglishAlternate(r.path),
     })),
     ...products.map((p) => ({
       url: `${siteUrl}/san-pham/${p.slug}`,
       lastModified: p.updatedAt,
       changeFrequency: "weekly" as const,
       priority: 0.7,
+      alternates: withEnglishAlternate(`/san-pham/${p.slug}`),
     })),
     ...posts.map((p) => ({
       url: `${siteUrl}/tin-tuc/${p.slug}`,
       lastModified: p.updatedAt,
       changeFrequency: "monthly" as const,
       priority: 0.5,
+      alternates: withEnglishAlternate(`/tin-tuc/${p.slug}`),
     })),
     ...glazes.map((g) => ({
       url: `${siteUrl}/san-pham/mau-men/${g.key}`,
       lastModified: new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.6,
+      alternates: withEnglishAlternate(`/san-pham/mau-men/${g.key}`),
     })),
   ];
 }

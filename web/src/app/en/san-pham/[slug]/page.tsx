@@ -10,23 +10,24 @@ import { resolveMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { WishlistButton } from "@/components/site/WishlistButton";
 import { ReviewsSection } from "@/components/site/ReviewsSection";
+import { pick, categoryLabel, glazeLabel } from "@/lib/i18n";
 
-const PRODUCT_FAQS = [
+const PRODUCT_FAQS_EN = [
   {
-    q: "Lọ có nhận đơn lẻ (mua 1 chiếc) không?",
-    a: "Có. Giá niêm yết là giá bán sỉ số lượng lớn — nếu mua lẻ 1-2 chiếc, vui lòng nhắn Zalo hoặc gọi hotline để xưởng báo giá lẻ chính xác.",
+    q: "Do you accept single-unit (retail) orders?",
+    a: "Yes. The listed price is our bulk wholesale price — for 1-2 units, please message us on Zalo or call our hotline for an accurate retail quote.",
   },
   {
-    q: "Chính sách đổi trả nếu hàng vỡ khi vận chuyển?",
-    a: "Xưởng đổi 1-đổi-1 miễn phí nếu sản phẩm bị lỗi hoặc vỡ do vận chuyển — vui lòng chụp ảnh tình trạng hàng ngay khi nhận và liên hệ trong vòng 48 giờ.",
+    q: "What's your return policy if an item arrives damaged?",
+    a: "We offer a free 1-for-1 replacement if a product is defective or broken in transit — please photograph the item's condition as soon as you receive it and contact us within 48 hours.",
   },
   {
-    q: "Có thể đặt màu men theo yêu cầu không?",
-    a: "Với đơn số lượng lớn, xưởng nhận đặt màu men riêng theo yêu cầu. Liên hệ trực tiếp để trao đổi mẫu và thời gian sản xuất.",
+    q: "Can I order a custom glaze color?",
+    a: "For bulk orders, we accept custom glaze color requests. Contact us directly to discuss samples and production timing.",
   },
   {
-    q: "Thời gian giao hàng bao lâu?",
-    a: "Hàng có sẵn tại xưởng thường giao trong 2-4 ngày tuỳ khu vực. Đơn đặt màu/số lượng lớn theo yêu cầu sẽ có thời gian sản xuất riêng, xưởng sẽ báo cụ thể khi xác nhận đơn.",
+    q: "How long does delivery take?",
+    a: "In-stock items typically ship within 2-4 days depending on region. Custom color/quantity orders have their own production timeline, which we'll confirm when your order is placed.",
   },
 ];
 
@@ -44,10 +45,6 @@ async function getProduct(slug: string) {
   });
 }
 
-// Rendered dynamically (no generateStaticParams): products are edited live
-// through the admin CMS, and static generation would need a live DB
-// connection at `docker build` time and would bake in stale content between
-// deploys either way.
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
@@ -58,21 +55,26 @@ export async function generateMetadata({
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) return {};
-  const dims = dimsLabel(product.sizes);
-  const price = priceLabel(product.sizes);
+  const dims = dimsLabel(product.sizes, "en");
+  const price = priceLabel(product.sizes, "en");
+  const name = pick(product.name, product.nameEn, "en");
   return resolveMetadata({
-    path: `/san-pham/${product.slug}`,
-    metaTitle: product.metaTitle,
-    metaDescription: product.metaDescription,
-    fallbackTitle: `${product.name} ${product.code} — Lọ Hoa Gốm Sứ Bát Tràng`,
+    path: `/en/san-pham/${product.slug}`,
+    metaTitle: pick(`${product.name} ${product.code} — Lọ Hoa Gốm Sứ Bát Tràng`, product.metaTitleEn, "en"),
+    metaDescription: pick(
+      `${product.tag ?? ""} ${dims ? `${dims}, giá sỉ ${price}.` : ""}`.trim(),
+      product.metaDescriptionEn,
+      "en",
+    ),
+    fallbackTitle: `${name} ${product.code} — Bat Trang Ceramic Vase`,
     fallbackDescription:
-      `${product.tag ?? ""} ${dims ? `${dims}, giá sỉ ${price}.` : ""} Hàng có sẵn tại xưởng gốm Bát Tràng, giao toàn quốc.`.trim(),
+      `${pick(product.tag ?? "", product.tagEn, "en")} ${dims ? `${dims}, wholesale price ${price}.` : ""} In stock at our Bat Trang workshop, ships nationwide.`.trim(),
     image: product.images[0]?.url,
-    altLocalePath: `/en/san-pham/${product.slug}`,
+    altLocalePath: `/san-pham/${product.slug}`,
   });
 }
 
-export default async function ProductDetailPage({
+export default async function EnglishProductDetailPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -90,6 +92,10 @@ export default async function ProductDetailPage({
     : null;
 
   const stock = stockBadge(product.sizes);
+  const name = pick(product.name, product.nameEn, "en");
+  const description = pick(product.description, product.descriptionEn, "en");
+  const tag = pick(product.tag ?? "", product.tagEn, "en") || null;
+  const categoryLbl = categoryLabel(product.category.slug, product.category.label, "en");
 
   const related = await prisma.product.findMany({
     where: { categoryId: product.categoryId, isDraft: false, NOT: { id: product.id } },
@@ -97,6 +103,7 @@ export default async function ProductDetailPage({
       slug: true,
       code: true,
       name: true,
+      nameEn: true,
       featured: true,
       category: { select: { slug: true, label: true } },
       sizes: { select: { label: true, heightCm: true, mouthCm: true, priceVnd: true, stockQty: true } },
@@ -110,9 +117,9 @@ export default async function ProductDetailPage({
   const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: `${product.name} - ${COMPANY.name}`,
+    name: `${name} - ${COMPANY.name}`,
     sku: product.code,
-    description: product.tag ?? product.description.slice(0, 200),
+    description: tag ?? description.slice(0, 200),
     brand: { "@type": "Brand", name: COMPANY.name },
   };
   if (prices.length) {
@@ -120,26 +127,21 @@ export default async function ProductDetailPage({
       "@type": "Offer",
       priceCurrency: "VND",
       price: String(Math.min(...prices)),
-      availability:
-        stock?.type === "out" ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
-      url: `${siteUrl}/san-pham/${product.slug}`,
+      availability: stock?.type === "out" ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+      url: `${siteUrl}/en/san-pham/${product.slug}`,
     };
   }
   if (avgRating !== null) {
-    jsonLd.aggregateRating = {
-      "@type": "AggregateRating",
-      ratingValue: avgRating.toFixed(1),
-      reviewCount: approvedReviews.length,
-    };
+    jsonLd.aggregateRating = { "@type": "AggregateRating", ratingValue: avgRating.toFixed(1), reviewCount: approvedReviews.length };
   }
 
-  const faq = faqJsonLd(PRODUCT_FAQS.map((f) => ({ question: f.q, answer: f.a })));
+  const faq = faqJsonLd(PRODUCT_FAQS_EN.map((f) => ({ question: f.q, answer: f.a })));
 
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Trang chủ", url: siteUrl },
-    { name: "Sản phẩm", url: `${siteUrl}/san-pham` },
-    { name: product.category.label, url: `${siteUrl}/san-pham?cat=${product.category.slug}` },
-    { name: product.name, url: `${siteUrl}/san-pham/${product.slug}` },
+    { name: "Home", url: `${siteUrl}/en` },
+    { name: "Products", url: `${siteUrl}/en/san-pham` },
+    { name: categoryLbl, url: `${siteUrl}/en/san-pham?cat=${product.category.slug}` },
+    { name, url: `${siteUrl}/en/san-pham/${product.slug}` },
   ]);
 
   return (
@@ -149,20 +151,20 @@ export default async function ProductDetailPage({
       <JsonLd data={faq} />
       <div className="container" style={{ paddingTop: "calc(var(--header-h) + 26px)" }}>
         <div className="breadcrumb" style={{ color: "var(--ink-faint)" }}>
-          <Link href="/">Trang chủ</Link>
+          <Link href="/en">Home</Link>
           <span>/</span>
-          <Link href="/san-pham">Sản phẩm</Link>
+          <Link href="/en/san-pham">Products</Link>
           <span>/</span>
-          <Link href={`/san-pham?cat=${product.category.slug}`}>{product.category.label}</Link>
+          <Link href={`/en/san-pham?cat=${product.category.slug}`}>{categoryLbl}</Link>
           <span>/</span>
-          <span>{product.name}</span>
+          <span>{name}</span>
         </div>
         <div className="pd-layout">
           <div className="pd-gallery">
             <div className="pd-main-img">
               <img
                 src={product.images[0]?.url ?? "/assets/img/placeholder.svg"}
-                alt={`${product.name} - lọ hoa gốm sứ Bát Tràng ${product.code}`}
+                alt={`${name} - Bat Trang ceramic vase ${product.code}`}
                 data-lightbox={product.images[0]?.url}
                 id="pdmain"
               />
@@ -171,7 +173,7 @@ export default async function ProductDetailPage({
               <div className="pd-thumbs">
                 {product.images.map((img, i) => (
                   <button key={img.id} data-full={img.url} className={i === 0 ? "is-active" : ""}>
-                    <img src={img.thumbUrl ?? img.url} alt={`${product.name} ảnh ${i + 1}`} loading="lazy" />
+                    <img src={img.thumbUrl ?? img.url} alt={`${name} photo ${i + 1}`} loading="lazy" />
                   </button>
                 ))}
               </div>
@@ -185,7 +187,7 @@ export default async function ProductDetailPage({
                   {"★".repeat(Math.round(avgRating))}
                   {"☆".repeat(5 - Math.round(avgRating))}
                   <span style={{ color: "var(--ink-faint)", fontSize: ".8rem", marginLeft: 6 }}>
-                    ({approvedReviews.length} đánh giá)
+                    ({approvedReviews.length} reviews)
                   </span>
                 </span>
               ) : (
@@ -193,136 +195,134 @@ export default async function ProductDetailPage({
               )}
               <WishlistButton productSlug={product.slug} />
             </div>
-            <h1>{product.name}</h1>
-            {product.tag && <p className="sub">{product.tag}</p>}
+            <h1>{name}</h1>
+            {tag && <p className="sub">{tag}</p>}
             <div className="pd-price" data-pd-price>
-              {priceLabel(product.sizes)}
+              {priceLabel(product.sizes, "en")}
             </div>
-            <p className="pd-price-note">
-              Giá bán sỉ, đã bao gồm men màu tiêu chuẩn · Đơn lẻ vui lòng liên hệ
-            </p>
-            {stock?.type === "out" && (
-              <p style={{ color: "#a83232", fontWeight: 700, marginBottom: 16 }}>Tạm hết hàng</p>
-            )}
+            <p className="pd-price-note">Wholesale price, includes standard glaze color · Contact us for single-unit orders</p>
+            {stock?.type === "out" && <p style={{ color: "#a83232", fontWeight: 700, marginBottom: 16 }}>Currently sold out</p>}
             {stock?.type === "low" && (
               <p style={{ color: "var(--terracotta-dark)", fontWeight: 700, marginBottom: 16 }}>
-                Chỉ còn {stock.qty} sản phẩm tại xưởng
+                Only {stock.qty} left at the workshop
               </p>
             )}
 
             <AddToCartControls
               productId={product.id}
               productSlug={product.slug}
-              productName={product.name}
+              productName={name}
               productCode={product.code}
               thumbUrl={product.images[0]?.thumbUrl ?? product.images[0]?.url ?? null}
               sizes={product.sizes}
-              colors={product.colors.map((c) => c.glaze)}
+              colors={product.colors.map((c) => ({ ...c.glaze, label: glazeLabel(c.glaze.key, c.glaze.label, "en") }))}
+              locale="en"
             />
 
             <div className="pd-cta">
               <a className="btn btn-ghost" href={`https://zalo.me/${COMPANY.zalo}`} target="_blank" rel="noopener">
-                Đặt hàng qua Zalo
+                Order via Zalo
               </a>
               <a className="btn btn-outline" href={`tel:${COMPANY.phone1Tel}`}>
-                Gọi tư vấn {COMPANY.phone1}
+                Call {COMPANY.phone1}
               </a>
             </div>
 
             <table className="pd-meta-table">
               <tbody>
                 <tr>
-                  <td>Mã hàng</td>
+                  <td>Product code</td>
                   <td>{product.code}</td>
                 </tr>
                 <tr>
-                  <td>Chất liệu</td>
-                  <td>Gốm sứ Bát Tràng, nung ở nhiệt độ cao</td>
+                  <td>Material</td>
+                  <td>Bat Trang ceramic, high-temperature fired</td>
                 </tr>
                 <tr>
-                  <td>Kích thước</td>
-                  <td data-pd-dims>{dimsLabel(product.sizes)}</td>
+                  <td>Dimensions</td>
+                  <td data-pd-dims>{dimsLabel(product.sizes, "en")}</td>
                 </tr>
                 <tr>
-                  <td>Xuất xứ</td>
-                  <td>Làng gốm Bát Tràng, Gia Lâm, Hà Nội</td>
+                  <td>Origin</td>
+                  <td>Bat Trang craft village, Gia Lam, Hanoi</td>
                 </tr>
                 <tr>
-                  <td>Đóng gói</td>
-                  <td>Chèn xốp/giấy chống sốc, thùng carton chuyên dụng cho gốm sứ</td>
+                  <td>Packaging</td>
+                  <td>Foam/paper cushioning, ceramics-specific carton box</td>
                 </tr>
               </tbody>
             </table>
 
             <div className="trust-row">
-              <div>✓ Hàng có sẵn tại xưởng</div>
-              <div>✓ Đổi 1-đổi-1 nếu lỗi/vỡ do vận chuyển</div>
-              <div>✓ Xuất hoá đơn theo yêu cầu</div>
+              <div>✓ In stock at the workshop</div>
+              <div>✓ 1-for-1 replacement for shipping damage/defects</div>
+              <div>✓ Invoice available on request</div>
             </div>
           </div>
         </div>
 
         <div className="tabs" data-panels="#pd-panels">
           <button className="tab-btn is-active" data-tab="mota">
-            Mô tả chi tiết
+            Description
           </button>
           <button className="tab-btn" data-tab="thongso">
-            Thông số kỹ thuật
+            Specifications
           </button>
           <button className="tab-btn" data-tab="baoquan">
-            Bảo quản &amp; vệ sinh
+            Care &amp; Cleaning
           </button>
           <button className="tab-btn" data-tab="faq">
-            Câu hỏi thường gặp
+            FAQ
           </button>
         </div>
         <div id="pd-panels">
           <div className="tab-panel is-active" data-panel="mota">
             <div className="article-body" style={{ margin: 0, maxWidth: "none" }}>
-              <p>{product.description}</p>
+              <p>{description}</p>
             </div>
           </div>
           <div className="tab-panel" data-panel="thongso">
             <div className="spec-list">
               <div>
-                <span>Mã hàng</span>
+                <span>Product code</span>
                 <span>{product.code}</span>
               </div>
               <div>
-                <span>Danh mục</span>
-                <span>{product.category.label}</span>
+                <span>Category</span>
+                <span>{categoryLbl}</span>
               </div>
               <div>
-                <span>Số kích thước</span>
+                <span>Number of sizes</span>
                 <span>{product.sizes.length}</span>
               </div>
               <div>
-                <span>Chất liệu</span>
-                <span>Gốm sứ cao cấp Bát Tràng</span>
+                <span>Material</span>
+                <span>Premium Bat Trang ceramic</span>
               </div>
               <div>
-                <span>Kỹ thuật</span>
-                <span>Vuốt tay / đổ khuôn, nung ~1200°C</span>
+                <span>Technique</span>
+                <span>Hand-thrown / molded, fired at ~1200°C</span>
               </div>
               <div>
-                <span>Ứng dụng</span>
-                <span>Trang trí nội thất, cắm hoa tươi/hoa khô, quà tặng</span>
+                <span>Use</span>
+                <span>Interior décor, fresh/dried flower arranging, gifting</span>
               </div>
             </div>
           </div>
           <div className="tab-panel" data-panel="baoquan">
             <div className="article-body" style={{ margin: 0, maxWidth: "none" }}>
               <p>
-                Lau nhẹ bằng khăn ẩm, tránh dùng vật sắc nhọn cọ xát trực tiếp lên bề mặt men để giữ
-                độ bóng lâu dài. Nếu cắm hoa tươi, nên thay nước 2–3 ngày/lần và vệ sinh khô ráo
-                trước khi cất trữ để tránh ố cặn bên trong lòng lọ. Đặt ở nơi chắc chắn, tránh va đập
-                mạnh; với các mẫu cỡ lớn nên có đế lót chống trượt khi đặt trên mặt sàn bóng.
+                Wipe gently with a damp soft cloth; avoid abrasive scrubbing directly on the glaze
+                surface to keep its shine. For fresh flowers, change the water every 2–3 days and dry
+                the inside thoroughly before storing to prevent residue buildup. Place on a stable
+                surface away from heavy traffic; for larger pieces, use a non-slip pad if placed on
+                polished floors.
               </p>
             </div>
           </div>
           <div className="tab-panel" data-panel="faq">
             <div style={{ display: "grid", gap: 18, maxWidth: 760 }}>
-              {PRODUCT_FAQS.map((f) => (
+              {PRODUCT_FAQS_EN.map((f) => (
                 <div key={f.q}>
                   <h4 style={{ marginBottom: 6 }}>{f.q}</h4>
                   <p style={{ color: "var(--ink-soft)", margin: 0 }}>{f.a}</p>
@@ -332,18 +332,18 @@ export default async function ProductDetailPage({
           </div>
         </div>
 
-        <ReviewsSection productId={product.id} productSlug={product.slug} reviews={approvedReviews} />
+        <ReviewsSection productId={product.id} productSlug={product.slug} reviews={approvedReviews} locale="en" />
 
         {related.length > 0 && (
           <>
             <hr className="divider" />
             <div className="section-head" data-reveal>
-              <span className="eyebrow">Có thể bạn cũng thích</span>
-              <h2>Sản Phẩm Cùng Danh Mục</h2>
+              <span className="eyebrow">You may also like</span>
+              <h2>More From This Category</h2>
             </div>
             <div className="related-scroll">
               {related.map((p, i) => (
-                <ProductCard key={p.slug} product={p} order={i} />
+                <ProductCard key={p.slug} product={p} order={i} locale="en" />
               ))}
             </div>
           </>

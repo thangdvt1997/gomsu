@@ -14,14 +14,25 @@ export function resolveMetadata(opts: {
   fallbackTitle: string;
   fallbackDescription: string;
   image?: string | null;
+  /** The equivalent path on the OTHER locale (e.g. pass the vi path when
+   * generating metadata for an /en page, and vice versa), for hreflang. */
+  altLocalePath?: string;
 }): Metadata {
   const title = opts.metaTitle || opts.fallbackTitle;
   const description = opts.metaDescription || opts.fallbackDescription;
   const url = `${siteUrl}${opts.path}`;
+  const isEn = opts.path.startsWith("/en");
+
+  const languages = opts.altLocalePath
+    ? isEn
+      ? { vi: `${siteUrl}${opts.altLocalePath}`, en: url }
+      : { vi: url, en: `${siteUrl}${opts.altLocalePath}` }
+    : undefined;
+
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: { canonical: url, languages },
     openGraph: {
       title,
       description,
